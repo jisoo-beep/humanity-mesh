@@ -16,6 +16,7 @@ import {
   Copy,
   Check
 } from 'lucide-react'
+import { copyToClipboard } from '@/lib/clipboard'
 
 interface Results {
   score: number
@@ -258,14 +259,14 @@ export default function AILab() {
               <div className="mt-8 pt-6 border-t border-indigo-200/50 flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500">Clicking 'Analysis' again will offer new perspectives.</span>
                 <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(results.correction).then(() => {
+                  onClick={async () => {
+                    const success = await copyToClipboard(results.correction)
+                    if (success) {
                       setCopied(true)
                       setTimeout(() => setCopied(false), 2000)
-                    }).catch(() => {
-                      // Fallback just in case document focus stops clipboard write
+                    } else {
                       prompt("Please copy manually:", results.correction)
-                    })
+                    }
                   }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all shadow-sm active:scale-95 ${
                     copied 
