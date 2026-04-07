@@ -20,7 +20,7 @@ import {
 interface Analytics {
   totalViews: number
   totalArticles: number
-  popularArticles: Array<{ id: string; title: string; authorName: string; type: string; views: number }>
+  popularArticles: Array<{ id: string; title: string; authorName: string; type: string; views: number; issueNumber: number | null }>
   viewsByDate: Array<{ date: string; views: number }>
   userActivity: Array<{ date: string; visitors: number }>
   emotionStats?: Record<string, number>
@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} tickFormatter={(val) => (t.weekdays as Record<string, string>)[val] || val} />
               <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+              <Tooltip labelFormatter={(val) => (t.weekdays as Record<string, string>)[val] || val} contentStyle={{ borderRadius: 8, fontSize: 12, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
               <Line type="monotone" dataKey="views" stroke="#6366f1" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} tickFormatter={(val) => (t.weekdays as Record<string, string>)[val] || val} />
               <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+              <Tooltip labelFormatter={(val) => (t.weekdays as Record<string, string>)[val] || val} contentStyle={{ borderRadius: 8, fontSize: 12, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
               <Bar dataKey="visitors" fill="#10b981" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -144,7 +144,10 @@ export default function AnalyticsPage() {
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-700 truncate"><AITranslatedText text={article.title} as="span" /></p>
-                <p className="text-xs text-slate-400"><AITranslatedText text={article.authorName} as="span" /></p>
+                <p className="text-xs text-slate-400">
+                  {article.issueNumber != null && <span className="mr-1">Vol.{article.issueNumber} ·</span>}
+                  <AITranslatedText text={article.authorName} as="span" />
+                </p>
               </div>
               <div className="flex items-center gap-1 text-slate-500 flex-shrink-0">
                 <Eye size={13} />

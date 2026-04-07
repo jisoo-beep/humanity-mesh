@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
-import { 
-  Users, Key, Calendar, User as UserIcon, Search, Filter, 
-  PieChart as PieIcon, BarChart3 as BarIcon, 
-  Eye, EyeOff, Copy, ShieldCheck, AlertCircle 
+import {
+  Users, Key, Calendar, Search,
+  PieChart as PieIcon, BarChart3 as BarIcon,
+  ShieldCheck
 } from 'lucide-react'
-import { copyToClipboard } from '@/lib/clipboard'
+
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
@@ -25,7 +25,10 @@ export default function AdminUsers() {
   const [users, setUsers] = useState<UserAccessKey[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set())
+  const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female' | 'other'>('all')
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 20
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null
@@ -39,26 +42,24 @@ export default function AdminUsers() {
       })
   }, [])
 
-  const toggleReveal = (key: string) => {
-    const newSet = new Set(revealedKeys)
-    if (newSet.has(key)) newSet.delete(key)
-    else newSet.add(key)
-    setRevealedKeys(newSet)
-  }
+  const filteredUsers = users
+    .filter((u) => {
+      const term = searchTerm.toLowerCase()
+      const matchesSearch =
+        !term ||
+        u.age.toString().includes(term) ||
+        u.gender.toLowerCase().includes(term) ||
+        new Date(u.createdAt).toLocaleDateString().includes(term)
+      const matchesGender = genderFilter === 'all' || u.gender === genderFilter
+      return matchesSearch && matchesGender
+    })
+    .sort((a, b) => {
+      const diff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      return sortOrder === 'newest' ? diff : -diff
+    })
 
-  const maskKey = (key: string) => {
-    if (key.length < 8) return key
-    return `${key.substring(0, 6)}••••`
-  }
-
-  const handleCopy = async (key: string) => {
-    await copyToClipboard(key)
-    alert(t.adminUsers.copyKey + ' OK')
-  }
-
-  const filteredUsers = users.filter((u) => 
-    u.key.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE))
+  const pagedUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   // Chart Data Computation
   const ageGroups = ['10s', '20s', '30s', '40s+']
@@ -103,15 +104,30 @@ export default function AdminUsers() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input 
               type="text" 
-              placeholder={lang === 'ko' ? '키 검색...' : 'Search key...'}
+              placeholder={lang === 'ko' ? '나이/성별/날짜 검색...' : 'Search age/gender/date...'}
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1) }}
               className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64 shadow-sm"
             />
           </div>
-          <button className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 shadow-sm transition-colors">
-            <Filter size={18} />
-          </button>
+          <select
+            value={genderFilter}
+            onChange={(e) => { setGenderFilter(e.target.value as any); setPage(1) }}
+            className="py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+          >
+            <option value="all">{lang === 'ko' ? '전체' : 'All'}</option>
+            <option value="male">{t.adminUsers.gender.male}</option>
+            <option value="female">{t.adminUsers.gender.female}</option>
+            <option value="other">{t.adminUsers.gender.other}</option>
+          </select>
+          <select
+            value={sortOrder}
+            onChange={(e) => { setSortOrder(e.target.value as any); setPage(1) }}
+            className="py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+          >
+            <option value="newest">{lang === 'ko' ? '최신순' : 'Newest'}</option>
+            <option value="oldest">{lang === 'ko' ? '오래된순' : 'Oldest'}</option>
+          </select>
         </div>
       </div>
 
@@ -188,44 +204,16 @@ export default function AdminUsers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => {
-                  const isRevealed = revealedKeys.has(user.key)
+              {pagedUsers.length > 0 ? (
+                pagedUsers.map((user) => {
                   return (
-                    <tr key={user.key} className="hover:bg-slate-50/50 transition-colors group">
+                    <tr key={user.createdAt} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-slate-100 rounded-lg text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                             <Key size={14} />
                           </div>
-                          <div className="flex flex-col">
-                            <span className="font-mono font-bold text-slate-700 tracking-wider uppercase">
-                              {isRevealed ? user.key : maskKey(user.key)}
-                            </span>
-                            {isRevealed && (
-                              <span className="text-[9px] text-rose-500 font-bold mt-1 flex items-center gap-1">
-                                <AlertCircle size={10} /> {t.adminUsers.keyViewWarning}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button 
-                              onClick={() => toggleReveal(user.key)}
-                              title={t.adminUsers.viewKey}
-                              className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
-                            >
-                              {isRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
-                            </button>
-                            {isRevealed && (
-                              <button 
-                                onClick={() => handleCopy(user.key)}
-                                title={t.adminUsers.copyKey}
-                                className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
-                              >
-                                <Copy size={14} />
-                              </button>
-                            )}
-                          </div>
+                          <span className="font-mono font-bold text-slate-400 tracking-wider">ST-••••••</span>
                         </div>
                       </td>
                       <td className="px-8 py-5">
@@ -265,7 +253,49 @@ export default function AdminUsers() {
       </div>
 
       <div className="mt-6 flex items-center justify-between text-xs text-slate-400 font-medium px-4">
-        <p>{lang === 'ko' ? `총 ${filteredUsers.length}명의 사용자` : `Total ${filteredUsers.length} users`}</p>
+        <p>{lang === 'ko' ? `총 ${filteredUsers.length}명 · ${page}/${totalPages} 페이지` : `${filteredUsers.length} users · Page ${page}/${totalPages}`}</p>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {lang === 'ko' ? '이전' : 'Prev'}
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+              .reduce<(number | 'ellipsis')[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push('ellipsis')
+                acc.push(p)
+                return acc
+              }, [])
+              .map((p, i) =>
+                p === 'ellipsis' ? (
+                  <span key={`e${i}`} className="px-2 text-slate-300">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p as number)}
+                    className={`px-3 py-1.5 rounded-lg border transition-colors ${
+                      page === p
+                        ? 'bg-indigo-600 border-indigo-600 text-white font-bold'
+                        : 'border-slate-200 bg-white hover:bg-slate-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {lang === 'ko' ? '다음' : 'Next'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

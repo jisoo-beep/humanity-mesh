@@ -1,17 +1,13 @@
 import { getUserList } from '@/lib/mockData'
+import { isAuthenticated } from '@/lib/auth'
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('Authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!isAuthenticated(request)) {
     return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
-
   try {
     const users = await getUserList()
-    return Response.json({
-      success: true,
-      data: users
-    })
+    return Response.json({ success: true, data: users })
   } catch (error: any) {
     return Response.json({ success: false, error: error.message }, { status: 500 })
   }

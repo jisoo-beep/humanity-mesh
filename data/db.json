@@ -107,6 +107,36 @@
       "age": 8,
       "gender": "female",
       "createdAt": "2026-04-07T01:55:57.719Z"
+    },
+    {
+      "key": "45468f609946ee363bcf38b2be8597ebf0d890c6a21c87d248408866773e13b3",
+      "age": 12,
+      "gender": "other",
+      "createdAt": "2026-04-07T05:54:50.615Z"
+    },
+    {
+      "key": "935e399246668c377491998f556a350cbe069566150aac34098077ff4bb2479a",
+      "age": 14,
+      "gender": "male",
+      "createdAt": "2026-04-07T06:02:59.970Z"
+    },
+    {
+      "key": "b141556d8d409a190be7ca91a4164de4ae6acaa0e4c78644a0eceec07c3cd5e2",
+      "age": 19,
+      "gender": "female",
+      "createdAt": "2026-04-07T06:04:28.636Z"
+    },
+    {
+      "key": "df66a5735c967355e4bacf842102d8e0dbb54b3f05450af79e86827e69a833ea",
+      "age": 21,
+      "gender": "female",
+      "createdAt": "2026-04-07T06:05:12.223Z"
+    },
+    {
+      "key": "d6485ad6acf2a627eaae21709113e0a3c8d788df48ea0f9a4846de82cb2a0e7e",
+      "age": 11,
+      "gender": "other",
+      "createdAt": "2026-04-07T06:06:09.263Z"
     }
   ],
   "issues": [
@@ -243,12 +273,12 @@
   ],
   "stats": {
     "totalStudents": 24,
-    "totalStories": 47,
+    "totalStories": 57,
     "emotionData": {
-      "sadness": 45,
-      "anger": 10,
-      "responsibility": 15,
-      "hope": 30
+      "sadness": 365,
+      "anger": 250,
+      "responsibility": 275,
+      "hope": 210
     },
     "testimonials": [
       {
@@ -315,6 +345,236 @@
       "inputType": "text",
       "preview": "[장소]에서 [이름]은 [때]에 [소속]으로부터 중요한 테스트를 진행했습니다. 이 테스트는 시스템의 무결성을...",
       "createdAt": "2026-04-02T04:35:47.161Z"
+    },
+    {
+      "id": "story-mno7go0irfms3",
+      "cid": "bafkreie2uyqqngwau46qajkwlaba3tbj4kgk7xqguh6mfvigfhzs4gmqwu",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreie2uyqqngwau46qajkwlaba3tbj4kgk7xqguh6mfvigfhzs4gmqwu",
+      "iv": "db89e134b5237a60b36a4253",
+      "tag": "604f511c53e71f9bac3679938bd1850a",
+      "emotions": {
+        "sadness": 30,
+        "anger": 25,
+        "responsibility": 25,
+        "hope": 20
+      },
+      "keywords": [
+        "탈북",
+        "한국",
+        "낯설음",
+        "무시",
+        "안정된 삶"
+      ],
+      "inputType": "text",
+      "preview": "나는 [장소]에서 살다가 [때]에 탈북해 지금은 [장소]에서 지낸다.  \n처음 한국에 왔을 때 모든 게 낯설...",
+      "createdAt": "2026-04-07T05:55:26.994Z"
+    },
+    {
+      "id": "story-mno7hbk1rj19z",
+      "cid": "bafkreifzslwtxa2mzm56ufdj7im2avm6rbu3v2nskieg2k7fh2bkmobheu",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreifzslwtxa2mzm56ufdj7im2avm6rbu3v2nskieg2k7fh2bkmobheu",
+      "iv": "28bbc02d7aea233f461c74c8",
+      "tag": "daf4cfcf9101287d46f50f7f676a7b99",
+      "emotions": {
+        "sadness": 30,
+        "anger": 25,
+        "responsibility": 25,
+        "hope": 20
+      },
+      "keywords": [
+        "전쟁",
+        "폭격",
+        "가족",
+        "책임감",
+        "안도"
+      ],
+      "inputType": "text",
+      "preview": "나는 [장소]에서 태어나 전쟁을 피해 [장소]로 왔다. 어릴 때 들었던 폭격 소리가 아직도 꿈에 나온다. 왜...",
+      "createdAt": "2026-04-07T05:55:57.505Z"
+    },
+    {
+      "id": "story-mno7qxxrg96uj",
+      "cid": "bafkreie7rg3iwz2gyitoopet2mrv3abpe5pzwxujd7mbcs6cfuvsstwmfa",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreie7rg3iwz2gyitoopet2mrv3abpe5pzwxujd7mbcs6cfuvsstwmfa",
+      "iv": "810aa1b1bc1fd8928d7c3825",
+      "tag": "43dfe746a348b0cbbb7d481cab6db310",
+      "emotions": {
+        "sadness": 30,
+        "anger": 25,
+        "responsibility": 25,
+        "hope": 20
+      },
+      "keywords": [
+        "탈북",
+        "정착",
+        "말투",
+        "상처",
+        "책임감"
+      ],
+      "inputType": "text",
+      "preview": "[장소]에서 살다가 탈북해 [장소]에 정착했다. 사람들이 내 말투를 듣고 수군거릴 때마다 상처받는다. 나 자...",
+      "createdAt": "2026-04-07T06:03:26.415Z"
+    },
+    {
+      "id": "story-mno7s2rqsrpjk",
+      "cid": "bafkreia4vri2woj2hcm7ppu5ut4ublxvffmgznbb3lwezim45tgaeaq77i",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreia4vri2woj2hcm7ppu5ut4ublxvffmgznbb3lwezim45tgaeaq77i",
+      "iv": "46e82771ca8610349a3f1f9e",
+      "tag": "3de155b16de7fc720c8973fd500789e2",
+      "emotions": {
+        "sadness": 40,
+        "anger": 30,
+        "responsibility": 20,
+        "hope": 10
+      },
+      "keywords": [
+        "전쟁",
+        "난민",
+        "가족",
+        "죄책감",
+        "불공평"
+      ],
+      "inputType": "text",
+      "preview": "나는 [장소]에서 태어나 전쟁 후 [장소]에 살고 있다. 가족 대부분은 아직도 난민 캠프에 남아 있다. 그들...",
+      "createdAt": "2026-04-07T06:04:19.334Z"
+    },
+    {
+      "id": "story-mno7slfgut2dy",
+      "cid": "bafkreiemlty4uxahq7lliyzcgqpfuleuef3ul6aal7tit3gou3odcdtn2q",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreiemlty4uxahq7lliyzcgqpfuleuef3ul6aal7tit3gou3odcdtn2q",
+      "iv": "0ad743fd5eca7cb0a0bb966e",
+      "tag": "4d8657f7f4495972a044d256e6d2524e",
+      "emotions": {
+        "sadness": 25,
+        "anger": 10,
+        "responsibility": 30,
+        "hope": 35
+      },
+      "keywords": [
+        "탈북",
+        "스마트폰",
+        "부족함",
+        "책임",
+        "희망"
+      ],
+      "inputType": "text",
+      "preview": "[장소]에서 살다가 탈북 후 [장소]에서 지낸다. 스마트폰 하나 제대로 못 써서 사람들 앞에서 창피했다. 나...",
+      "createdAt": "2026-04-07T06:04:43.516Z"
+    },
+    {
+      "id": "story-mno7t29no1k0i",
+      "cid": "bafkreiazpqovrdjwsqesnenbrgm63advqoc4s4zqrpewyupzudfvwagcvq",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreiazpqovrdjwsqesnenbrgm63advqoc4s4zqrpewyupzudfvwagcvq",
+      "iv": "1ce65de6aee3d29ba70a16a8",
+      "tag": "b2f15196844ee3460ce7a9959d78b0e0",
+      "emotions": {
+        "sadness": 20,
+        "anger": 30,
+        "responsibility": 40,
+        "hope": 10
+      },
+      "keywords": [
+        "탈출",
+        "긴장감",
+        "가족",
+        "책임",
+        "새로운 시작"
+      ],
+      "inputType": "text",
+      "preview": "나는 [장소]에서 태어나 [장소]로 왔다. 탈출하던 날의 긴장감이 아직도 몸에 남아 있다. 왜 이런 상황에 ...",
+      "createdAt": "2026-04-07T06:05:05.339Z"
+    },
+    {
+      "id": "story-mno7tuayhfjoz",
+      "cid": "bafkreigwav5kqcr2u2scpj6g6j3g3tdrmifhemfx2n7v2ervtjojrlwwjy",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreigwav5kqcr2u2scpj6g6j3g3tdrmifhemfx2n7v2ervtjojrlwwjy",
+      "iv": "a78659e32baa66a81ed63300",
+      "tag": "c2ae2439483cf6ce7f387ad5bf77798c",
+      "emotions": {
+        "sadness": 40,
+        "anger": 10,
+        "responsibility": 30,
+        "hope": 20
+      },
+      "keywords": [
+        "탈북",
+        "외로움",
+        "사람들 시선",
+        "책임감",
+        "희망"
+      ],
+      "inputType": "text",
+      "preview": "[장소]에서 살다가 탈북해 지금은 [장소]에 있다.  \n[장소]에 와서도 외로움은 쉽게 사라지지 않았다.  ...",
+      "createdAt": "2026-04-07T06:05:41.674Z"
+    },
+    {
+      "id": "story-mno7u9er6wniu",
+      "cid": "bafkreidqkoyfkgxw4a6rmkcd273gsjudot45lpipa26wimor2gnek4xfke",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreidqkoyfkgxw4a6rmkcd273gsjudot45lpipa26wimor2gnek4xfke",
+      "iv": "c308ad39c7e85d2d97e92a71",
+      "tag": "8e37bcd29ac0e50ff432fb4afa41e4f8",
+      "emotions": {
+        "sadness": 40,
+        "anger": 30,
+        "responsibility": 20,
+        "hope": 10
+      },
+      "keywords": [
+        "전쟁",
+        "고향",
+        "파괴",
+        "가족",
+        "새로운 삶"
+      ],
+      "inputType": "text",
+      "preview": "나는 [장소]에서 전쟁을 피해 [장소]로 왔다. 고향이 파괴된 모습을 뉴스로 볼 때마다 눈물이 난다. 이런 ...",
+      "createdAt": "2026-04-07T06:06:01.251Z"
+    },
+    {
+      "id": "story-mno7v0ozvxxqq",
+      "cid": "bafkreifownwg5qhrh6laa5qkspvpnnnhadggvr7q5o4ruxxtcsv26nbrpu",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreifownwg5qhrh6laa5qkspvpnnnhadggvr7q5o4ruxxtcsv26nbrpu",
+      "iv": "e3d871614a433331e833353d",
+      "tag": "db3fb7e7b8f51a2771b8081618430ca5",
+      "emotions": {
+        "sadness": 25,
+        "anger": 25,
+        "responsibility": 25,
+        "hope": 25
+      },
+      "keywords": [
+        "탈북",
+        "정착",
+        "외로움",
+        "책임감",
+        "희망"
+      ],
+      "inputType": "text",
+      "preview": "[장소] [장소]에서 살다가 탈북 후 [장소]에 정착했다.  \n처음엔 사람들과 말도 잘 통하지 않아 외로웠다...",
+      "createdAt": "2026-04-07T06:06:36.612Z"
+    },
+    {
+      "id": "story-mno7v7srtd9i5",
+      "cid": "bafkreifjxki6rpzcqgugcb34giusj3akvdifwa4hqq4owazjjdeljfipum",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreifjxki6rpzcqgugcb34giusj3akvdifwa4hqq4owazjjdeljfipum",
+      "iv": "508cc2f1c4c4675678b2bcb5",
+      "tag": "6f9d3c82c0780b9e106d698fbb64dee5",
+      "emotions": {
+        "sadness": 40,
+        "anger": 30,
+        "responsibility": 20,
+        "hope": 10
+      },
+      "keywords": [
+        "전쟁",
+        "친구",
+        "분노",
+        "살아남다",
+        "미래"
+      ],
+      "inputType": "text",
+      "preview": "나는 [장소]에서 태어나 [장소]로 오게 되었다. 전쟁 중 잃어버린 친구들이 아직도 생각난다. 왜 그런 일이...",
+      "createdAt": "2026-04-07T06:06:45.819Z"
     }
   ],
   "articles": [
@@ -657,7 +917,7 @@
       "authorName": "은별 (17세)",
       "displayOrder": 1,
       "createdAt": "2026-12-01T15:00:00.000Z",
-      "views": 297
+      "views": 298
     },
     {
       "id": "article-11002",
@@ -668,7 +928,7 @@
       "authorName": "강산 (16세)",
       "displayOrder": 2,
       "createdAt": "2026-12-01T15:00:00.000Z",
-      "views": 483
+      "views": 484
     },
     {
       "id": "article-11003",
@@ -679,7 +939,7 @@
       "authorName": "우리 (15세)",
       "displayOrder": 3,
       "createdAt": "2026-12-01T15:00:00.000Z",
-      "views": 133
+      "views": 134
     },
     {
       "id": "article-12001",

@@ -1,9 +1,13 @@
 import { updateArticle, deleteArticle } from '@/lib/mockData'
+import { isAuthenticated } from '@/lib/auth'
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isAuthenticated(request)) {
+    return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+  }
   const { id } = await params
   try {
     const data = await request.json()
@@ -18,6 +22,9 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isAuthenticated(request)) {
+    return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+  }
   const { id } = await params
   try {
     const result = await deleteArticle(id)
