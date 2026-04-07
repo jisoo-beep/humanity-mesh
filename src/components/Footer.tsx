@@ -1,0 +1,51 @@
+'use client'
+
+import Link from 'next/link'
+import { useI18n } from '@/lib/i18n'
+
+export default function Footer() {
+  const { t } = useI18n()
+
+  return (
+    <footer id="archive" className="bg-slate-950 text-slate-400 py-16">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid md:grid-cols-2 gap-12 mb-12">
+          {/* Brand */}
+          <div>
+            <p className="text-white font-semibold mb-3">StoryTech Humanity Lab</p>
+            <p className="text-sm leading-relaxed text-slate-500">
+              {t.footer.about}
+            </p>
+          </div>
+
+
+
+          {/* Contact */}
+          <div>
+            <p className="text-slate-300 text-sm font-semibold uppercase tracking-widest mb-4">
+              {t.footer.contact}
+            </p>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="mailto:contact@storytech.org" className="hover:text-white transition-colors">
+                  contact@storytech.org
+                </a>
+              </li>
+              <li>
+                <button className="hover:text-white transition-colors">
+                  {t.footer.contribute}
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-800 pt-8 text-center text-xs text-slate-600">
+          <Link href="/admin/login" className="hover:text-slate-500 transition-colors">
+            {t.footer.rights}
+          </Link>
+        </div>
+      </div>
+    </footer>
+  )
+}
