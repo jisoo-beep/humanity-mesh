@@ -24,7 +24,7 @@ export default function AdminLogin() {
     const data = await res.json()
 
     if (!res.ok || !data.success) {
-      setError(data.error ?? '로그인에 실패했습니다.')
+      setError(data.error ?? 'Login failed.')
       setLoading(false)
       return
     }
@@ -39,12 +39,12 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p className="text-white font-semibold text-lg">StoryTech Humanity Lab</p>
-          <p className="text-slate-400 text-sm mt-1">관리자 로그인</p>
+          <p className="text-slate-400 text-sm mt-1">Admin Login</p>
         </div>
 
         <form onSubmit={login} className="bg-slate-800 rounded-2xl p-8 space-y-5">
           <div>
-            <label className="block text-sm text-slate-300 mb-2">이메일</label>
+            <label className="block text-sm text-slate-300 mb-2">Email</label>
             <input
               type="email"
               value={email}
@@ -55,7 +55,7 @@ export default function AdminLogin() {
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-300 mb-2">비밀번호</label>
+            <label className="block text-sm text-slate-300 mb-2">Password</label>
             <input
               type="password"
               value={password}
@@ -73,12 +73,12 @@ export default function AdminLogin() {
             disabled={loading}
             className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
           >
-            {loading ? '로그인 중...' : '로그인'}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
 
           <div className="mt-6 text-center">
             <Link href="/" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-              메인 홈페이지로 돌아가기
+              Return to Main Homepage
             </Link>
           </div>
         </form>

@@ -392,7 +392,7 @@ export default function StorySubmit() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => document.getElementById('archive')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => { window.location.href = '/#archive' }}
                 className="flex-1 py-3 rounded-xl bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 transition-colors"
               >
                 {s.viewArchive}

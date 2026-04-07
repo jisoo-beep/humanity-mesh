@@ -22,7 +22,7 @@ interface AdminStats {
   totalViews: number
   uniqueVisitors: number
   viewsByDate: Array<{ date: string; views: number }>
-  popularArticles: Array<{ id: string; title: string; authorName: string; type: string; views: number }>
+  popularArticles: Array<{ id: string; title: string; authorName: string; type: string; views: number; issueNumber: number | null }>
   userActivity: Array<{ date: string; visitors: number }>
 }
 
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
               <BarChart data={stats.userActivity} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={(val) => (t.weekdays as Record<string, string>)[val] || val} />
                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', fontSize: 12 }} />
+                <Tooltip labelFormatter={(val) => (t.weekdays as Record<string, string>)[val] || val} cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', fontSize: 12 }} />
                 <Bar dataKey="visitors" radius={[6, 6, 0, 0]}>
                   {stats.userActivity.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={index === stats.userActivity.length - 1 ? '#6366f1' : '#e2e8f0'} />
@@ -123,7 +123,10 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-700 truncate"><AITranslatedText text={art.title} as="span" /></p>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-wide"><AITranslatedText text={art.authorName} as="span" /></p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide">
+                    {art.issueNumber != null && <span className="mr-1">Vol.{art.issueNumber} ·</span>}
+                    <AITranslatedText text={art.authorName} as="span" />
+                  </p>
                 </div>
                 <div className="text-xs font-medium text-slate-400 flex items-center gap-1">
                   <Eye size={12} /> {art.views}

@@ -16,7 +16,16 @@ const typeBadgeColor = {
 
 function ArticleItem({ article, typeLabel }: { article: Article; typeLabel: string }) {
   const [open, setOpen] = useState(false)
+  const [viewed, setViewed] = useState(false)
   const Icon = typeIcon[article.type]
+
+  const handleToggle = () => {
+    if (!open && !viewed) {
+      fetch(`/api/articles/${article.id}/view`, { method: 'PATCH' })
+      setViewed(true)
+    }
+    setOpen((v) => !v)
+  }
 
   return (
     <motion.div
@@ -30,7 +39,7 @@ function ArticleItem({ article, typeLabel }: { article: Article; typeLabel: stri
     >
       <motion.button
         whileTap={{ scale: 0.98 }}
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleToggle}
         className="w-full flex items-center gap-4 p-6 text-left"
       >
         {/* badge */}

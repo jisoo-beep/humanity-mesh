@@ -1,6 +1,10 @@
 import { createArticle } from '@/lib/mockData'
+import { isAuthenticated } from '@/lib/auth'
 
 export async function POST(request: Request) {
+  if (!isAuthenticated(request)) {
+    return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+  }
   try {
     const { issueId, ...data } = await request.json()
     if (!issueId) {

@@ -158,6 +158,10 @@ export async function getAnalytics() {
   const popularArticles = [...db.articles]
     .sort((a, b) => (b.views || 0) - (a.views || 0))
     .slice(0, 5)
+    .map((article) => {
+      const issue = db.issues.find((i) => i.id === article.issueId)
+      return { ...article, issueNumber: issue?.issueNumber ?? null }
+    })
 
   return {
     totalIssues,

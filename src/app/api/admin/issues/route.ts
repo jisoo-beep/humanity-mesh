@@ -1,6 +1,10 @@
 import { getAllIssuesAdmin, createIssue } from '@/lib/mockData'
+import { isAuthenticated } from '@/lib/auth'
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!isAuthenticated(request)) {
+    return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+  }
   try {
     const issues = await getAllIssuesAdmin()
     return Response.json({ success: true, data: { issues } })
@@ -10,6 +14,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!isAuthenticated(request)) {
+    return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+  }
   try {
     const data = await request.json()
     const newIssue = await createIssue(data)
