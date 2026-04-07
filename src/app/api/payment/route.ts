@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { readDB, writeDB } from '@/lib/db'
 import type { AccessKey } from '@/lib/db'
+
+function hashKey(key: string): string {
+  return crypto.createHash('sha256').update(key).digest('hex')
+}
 
 function generateKey(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // 헷갈리는 문자(O,I,1,0) 제외
@@ -35,13 +40,13 @@ export async function POST(request: Request) {
     // 중복 없는 키 생성
     let key = generateKey()
     let attempts = 0
-    while (db.accessKeys.some((k) => k.key === key) && attempts < 10) {
+    while (db.accessKeys.some((k) => k.key === hashKey(key)) && attempts < 10) {
       key = generateKey()
       attempts++
     }
 
     const newKey: AccessKey = {
-      key,
+      key: hashKey(key),  // 해시만 저장
       age: ageNum,
       gender,
       createdAt: new Date().toISOString(),
@@ -50,7 +55,7 @@ export async function POST(request: Request) {
     db.accessKeys.push(newKey)
     writeDB(db)
 
-    return NextResponse.json({ success: true, key })
+    return NextResponse.json({ success: true, key })  // 원본 키는 여기서만 반환
   } catch (error) {
     console.error('Payment API error:', error)
     return NextResponse.json(
@@ -70,7 +75,7 @@ export async function GET(request: Request) {
   }
 
   const db = readDB()
-  const found = db.accessKeys.find((k) => k.key === key)
+  const found = db.accessKeys.find((k) => k.key === hashKey(key))
 
   return NextResponse.json({ success: true, valid: !!found })
 }
