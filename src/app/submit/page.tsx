@@ -9,6 +9,7 @@ import StorySubmit from '@/components/StorySubmit'
 import PaymentModal from '@/components/PaymentModal'
 import LoginModal from '@/components/LoginModal'
 import { Cpu, Send, ArrowLeft, Sparkles, ShieldCheck, Key, LogIn, Check, Copy, Eye, EyeOff } from 'lucide-react'
+import { copyToClipboard } from '@/lib/clipboard'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function SubmitPage() {
@@ -33,11 +34,12 @@ export default function SubmitPage() {
     setReady(true)
   }, [])
 
-  const copyMyKey = () => {
-    navigator.clipboard.writeText(myKey).then(() => {
+  const copyMyKey = async () => {
+    const success = await copyToClipboard(myKey)
+    if (success) {
       setKeyCopied(true)
       setTimeout(() => setKeyCopied(false), 2000)
-    })
+    }
   }
 
   if (!ready) return null

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
 import { User, Copy, LogOut, ShieldCheck, Check } from 'lucide-react'
+import { copyToClipboard } from '@/lib/clipboard'
 
 export default function Navigation() {
   const { lang, t, setLang } = useI18n()
@@ -48,11 +49,13 @@ export default function Navigation() {
     window.location.reload() // Simple way to reset all states
   }
 
-  const copyKey = () => {
+  const copyKey = async () => {
     if (myKey) {
-      navigator.clipboard.writeText(myKey)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      const success = await copyToClipboard(myKey)
+      if (success) {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }
     }
   }
 

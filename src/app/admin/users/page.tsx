@@ -7,6 +7,7 @@ import {
   PieChart as PieIcon, BarChart3 as BarIcon, 
   Eye, EyeOff, Copy, ShieldCheck, AlertCircle 
 } from 'lucide-react'
+import { copyToClipboard } from '@/lib/clipboard'
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
@@ -50,8 +51,8 @@ export default function AdminUsers() {
     return `${key.substring(0, 6)}••••`
   }
 
-  const copyToClipboard = (key: string) => {
-    navigator.clipboard.writeText(key)
+  const handleCopy = async (key: string) => {
+    await copyToClipboard(key)
     alert(t.adminUsers.copyKey + ' OK')
   }
 
@@ -217,7 +218,7 @@ export default function AdminUsers() {
                             </button>
                             {isRevealed && (
                               <button 
-                                onClick={() => copyToClipboard(user.key)}
+                                onClick={() => handleCopy(user.key)}
                                 title={t.adminUsers.copyKey}
                                 className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
                               >

@@ -140,9 +140,7 @@ export default function Magazine() {
                 {t.magazine.vol} {displayIssue.issueNumber}
               </p>
               <h3 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight mb-3">
-                {Number(displayIssue.issueNumber) === 1 ? t.magazine.vol1Title 
-                  : Number(displayIssue.issueNumber) === 2 ? t.magazine.vol2Title 
-                  : <AITranslatedText text={displayIssue.title} />}
+                <AITranslatedText text={displayIssue.title} />
               </h3>
               <AITranslatedText text={displayIssue.theme} className="text-slate-500 text-base mb-6" />
               {displayIssue.publishedAt && (
@@ -240,11 +238,7 @@ export default function Magazine() {
                     className="flex items-center justify-between gap-3 px-5 py-3.5 rounded-xl border border-slate-200 bg-white/90 backdrop-blur hover:border-slate-300 hover:shadow-md transition-all font-medium text-sm text-slate-700 w-full sm:w-80"
                   >
                     <span className="truncate text-left flex-1">
-                      {t.magazine.vol} {displayIssue.issueNumber} · {
-                        Number(displayIssue.issueNumber) === 1 ? t.magazine.vol1Title 
-                        : Number(displayIssue.issueNumber) === 2 ? t.magazine.vol2Title 
-                        : <AITranslatedText text={displayIssue.title} as="span" />
-                      }
+                      {t.magazine.vol} {displayIssue.issueNumber} · <AITranslatedText text={displayIssue.title} as="span" />
                     </span>
                     <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${archiveOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -268,9 +262,7 @@ export default function Magazine() {
                               <div className="flex items-center gap-3">
                                 <span className={`text-xs tracking-wider rounded-md px-1.5 py-0.5 ${displayIssue.id === issue.id ? 'bg-indigo-100/50' : 'bg-slate-100 text-slate-500'}`}>Vol. {issue.issueNumber}</span>
                                 <span className="truncate flex-1">
-                                  {Number(issue.issueNumber) === 1 ? t.magazine.vol1Title 
-                                  : Number(issue.issueNumber) === 2 ? t.magazine.vol2Title 
-                                  : <AITranslatedText text={issue.title} as="span" />}
+                                  <AITranslatedText text={issue.title} as="span" />
                                 </span>
                               </div>
                             </button>

@@ -65,11 +65,33 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
     }
   }
 
-  const copyKey = () => {
-    navigator.clipboard.writeText(key).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
+  const copyKey = async () => {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(key)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch (err) {
+        console.error('Clipboard copy failed:', err)
+      }
+    } else {
+      try {
+        const textArea = document.createElement('textarea')
+        textArea.value = key
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        document.execCommand('copy')
+        textArea.remove()
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch (err) {
+        console.error('Fallback copy failed:', err)
+      }
+    }
   }
 
   return (

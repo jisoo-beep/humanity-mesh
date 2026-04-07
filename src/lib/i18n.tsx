@@ -103,7 +103,7 @@ const ko = {
     archive: '아카이브',
     about: '탈북 청소년들의 이야기가 세상과 만나는 공간',
     contact: '연락하기',
-    contribute: '참여하기',
+    // contribute: '참여하기',
     rights: '© 2026 StoryTech Humanity Lab. All rights reserved.',
   },
   submit: {
@@ -389,7 +389,7 @@ const en: typeof ko = {
     archive: 'Archive',
     contact: 'Contact',
     about: "Where the stories of North Korean defector youth meet the world.",
-    contribute: 'Contribute',
+    // contribute: 'Contribute',
     rights: '© 2026 StoryTech Humanity Lab. All rights reserved.',
   },
   submit: {
@@ -585,13 +585,13 @@ interface I18nContextValue {
 }
 
 const I18nContext = createContext<I18nContextValue>({
-  lang: 'ko',
-  t: ko,
+  lang: 'en',
+  t: en,
   setLang: () => { },
 })
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>('ko')
+  const [lang, setLang] = useState<Lang>('en')
   return (
     <I18nContext.Provider value={{ lang, t: translations[lang], setLang }}>
       {children}

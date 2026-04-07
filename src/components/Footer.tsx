@@ -9,32 +9,25 @@ export default function Footer() {
   return (
     <footer id="archive" className="bg-slate-950 text-slate-400 py-16">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid md:grid-cols-2 gap-12 mb-12">
+        <div className="flex flex-col md:flex-row gap-12 md:gap-32 mb-16">
           {/* Brand */}
-          <div>
+          <div className="md:w-1/2 lg:w-1/3">
             <p className="text-white font-semibold mb-3">StoryTech Humanity Lab</p>
             <p className="text-sm leading-relaxed text-slate-500">
               {t.footer.about}
             </p>
           </div>
 
-
-
           {/* Contact */}
           <div>
             <p className="text-slate-300 text-sm font-semibold uppercase tracking-widest mb-4">
               {t.footer.contact}
             </p>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm text-slate-500">
               <li>
                 <a href="mailto:contact@storytech.org" className="hover:text-white transition-colors">
                   contact@storytech.org
                 </a>
-              </li>
-              <li>
-                <button className="hover:text-white transition-colors">
-                  {t.footer.contribute}
-                </button>
               </li>
             </ul>
           </div>

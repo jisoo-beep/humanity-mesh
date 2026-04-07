@@ -4,7 +4,7 @@ import { useI18n } from '@/lib/i18n'
 import { ChevronDown } from 'lucide-react'
 
 export default function Hero() {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white overflow-hidden">
@@ -17,7 +17,7 @@ export default function Hero() {
 
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
         <p className="text-xs tracking-[0.3em] uppercase text-slate-400 mb-6">
-          {t.magazine.vol} 2 · {t.magazine.vol2Title}
+          {lang === 'ko' ? '익명 스토리 아카이브' : 'ANONYMOUS STORY ARCHIVE'}
         </p>
 
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-none mb-6">
