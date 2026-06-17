@@ -1,0 +1,25 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+        - echo "ADMIN_EMAIL=$ADMIN_EMAIL" >> .env.production
+        - echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> .env.production
+        - echo "AUTH_SECRET=$AUTH_SECRET" >> .env.production
+        - echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env.production
+        - echo "OPENAI_MODEL=$OPENAI_MODEL" >> .env.production
+        - echo "PINATA_JWT=$PINATA_JWT" >> .env.production
+        - echo "PINATA_GATEWAY=$PINATA_GATEWAY" >> .env.production
+        - echo "STORY_ENCRYPTION_KEY=$STORY_ENCRYPTION_KEY" >> .env.production
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - .next/cache/**/*
+      - node_modules/**/*
