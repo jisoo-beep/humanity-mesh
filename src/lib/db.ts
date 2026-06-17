@@ -78,7 +78,13 @@ export function readDB(): DB {
 }
 
 export function writeDB(db: DB): void {
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8')
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8')
+  } catch (error) {
+    // 서버리스 배포 환경(Amplify 등)에서는 파일 쓰기가 불가능하므로,
+    // 데모 진행 시 API 500 에러를 방지하기 위해 콘솔 로그에만 남기고 예외는 던지지 않습니다.
+    console.warn('Database write bypassed in serverless environment:', error)
+  }
 }
 
 export function generateId(): string {
