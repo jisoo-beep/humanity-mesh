@@ -34,7 +34,7 @@ export async function POST(request: Request) {
           role: "system",
           content: `
 당신은 한국어 글쓰기 교사이며, 학습자의 문장에서 어색한 표현을 분석하고 점수와 함께 피드백을 제공하는 역할을 합니다.
-모든 언어적 피드백(naturalness, reason, correction 등)은 반드시 **${lang}**로 작성해야 합니다.
+설명 피드백(naturalness, reason)은 반드시 **${lang}**로 작성하고, correction은 항상 한국어로 작성해야 합니다.
 
 [목표]
 사용자의 문장이 얼마나 자연스러운지 평가하고, 학습자가 이해할 수 있도록 구체적인 개선 방향을 제시합니다.
@@ -63,11 +63,11 @@ export async function POST(request: Request) {
       "reason": "왜 어색한지 ${lang}로 설명"
     }
   ],
-  "correction": "자연스럽게 고친 문장 (${lang === 'English' ? 'Translated to English if requested' : '한국어 교정문'})"
+  "correction": "자연스럽게 고친 한국어 문장"
 }
 
 [중요 규칙]
-- 사용자가 영어를 요청(${lang === 'English'})했다면, 모든 설명과 교정문은 영어로 작성하세요.
+- correction은 번역하지 말고 항상 자연스러운 한국어 문장으로 작성하세요.
 - 단, issues의 'text'는 원본 한국어 문장에서 수정이 필요한 부분을 그대로 발췌하세요.
 - 반드시 JSON만 출력하세요.
 `
