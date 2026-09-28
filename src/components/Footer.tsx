@@ -17,20 +17,6 @@ export default function Footer() {
               {t.footer.about}
             </p>
           </div>
-
-          {/* Contact */}
-          <div>
-            <p className="text-slate-300 text-sm font-semibold uppercase tracking-widest mb-4">
-              {t.footer.contact}
-            </p>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li>
-                <a href="mailto:contact@storytech.org" className="hover:text-white transition-colors">
-                  contact@storytech.org
-                </a>
-              </li>
-            </ul>
-          </div>
         </div>
 
         <div className="border-t border-slate-800 pt-8 text-center text-xs text-slate-600">

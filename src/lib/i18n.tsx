@@ -102,7 +102,6 @@ const ko = {
   footer: {
     archive: '아카이브',
     about: '탈북 청소년들의 이야기가 세상과 만나는 공간',
-    contact: '연락하기',
     // contribute: '참여하기',
     rights: '© 2026 StoryTech Humanity Lab. All rights reserved.',
   },
@@ -387,7 +386,6 @@ const en: typeof ko = {
   },
   footer: {
     archive: 'Archive',
-    contact: 'Contact',
     about: "Where the stories of North Korean defector youth meet the world.",
     // contribute: 'Contribute',
     rights: '© 2026 StoryTech Humanity Lab. All rights reserved.',

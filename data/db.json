@@ -273,7 +273,7 @@
   ],
   "stats": {
     "totalStudents": 24,
-    "totalStories": 57,
+    "totalStories": 58,
     "emotionData": {
       "sadness": 365,
       "anger": 250,
@@ -575,6 +575,25 @@
       "inputType": "text",
       "preview": "나는 [장소]에서 태어나 [장소]로 오게 되었다. 전쟁 중 잃어버린 친구들이 아직도 생각난다. 왜 그런 일이...",
       "createdAt": "2026-04-07T06:06:45.819Z"
+    },
+    {
+      "id": "story-mukvc6gs3g9t9",
+      "cid": "bafkreieno72ekivngowxpsrqdsiqtdcvb44xqh4tfszo4mpzd7fratguwu",
+      "ipfsUrl": "https://lavender-fascinating-dolphin-30.mypinata.cloud/ipfs/bafkreieno72ekivngowxpsrqdsiqtdcvb44xqh4tfszo4mpzd7fratguwu",
+      "iv": "2224f7f7b8657873d5f19cb9",
+      "tag": "735dcf479694ed57f06c1c917a6f8988",
+      "emotions": {
+        "sadness": 0,
+        "anger": 0,
+        "responsibility": 0,
+        "hope": 0
+      },
+      "keywords": [
+        "전화번호"
+      ],
+      "inputType": "text",
+      "preview": "나의 전화번호는 [전화번호]이다.",
+      "createdAt": "2026-09-28T06:30:40.060Z"
     }
   ],
   "articles": [
@@ -928,7 +947,7 @@
       "authorName": "강산 (16세)",
       "displayOrder": 2,
       "createdAt": "2026-12-01T15:00:00.000Z",
-      "views": 484
+      "views": 485
     },
     {
       "id": "article-11003",
@@ -939,7 +958,7 @@
       "authorName": "우리 (15세)",
       "displayOrder": 3,
       "createdAt": "2026-12-01T15:00:00.000Z",
-      "views": 135
+      "views": 136
     },
     {
       "id": "article-12001",
