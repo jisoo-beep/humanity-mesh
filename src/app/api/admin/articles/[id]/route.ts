@@ -1,4 +1,4 @@
-import { updateArticle, deleteArticle, ArticleValidationError } from '@/lib/repository'
+import { updateArticle, deleteArticle, ValidationError } from '@/lib/repository'
 import { isAuthenticated } from '@/lib/auth'
 
 export async function PUT(
@@ -14,7 +14,7 @@ export async function PUT(
     const updated = await updateArticle(id, data)
     return Response.json({ success: true, data: updated })
   } catch (err) {
-    const status = err instanceof ArticleValidationError ? 400 : 404
+    const status = err instanceof ValidationError ? 400 : 404
     return Response.json({ success: false, error: (err as Error).message }, { status })
   }
 }

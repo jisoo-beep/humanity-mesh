@@ -28,6 +28,7 @@ interface ArticleRow {
   display_order: number
   views: number
   highlight_quote: string | null
+  source_story_id: string | null
   created_at: string
 }
 
@@ -40,6 +41,7 @@ interface StoryRow {
   publish_consent: boolean
   pen_name: string | null
   created_at: string
+  articles: { id: string }[] | { id: string } | null
 }
 
 type ArticleInput = Pick<Article, 'type' | 'title' | 'content' | 'authorName' | 'displayOrder' | 'highlightQuote'>
@@ -47,7 +49,11 @@ type ArticleInput = Pick<Article, 'type' | 'title' | 'content' | 'authorName' | 
 const UNIQUE_VIOLATION = '23505'
 const FOREIGN_KEY_VIOLATION = '23503'
 const INVALID_TEXT_REPRESENTATION = '22P02'
+const RAISED_EXCEPTION = 'P0001' // protect_story_articles 트리거
 const ISSUE_WITH_ARTICLES = '*, articles(*)'
+
+// 사용자 입력 문제로 생긴 오류 — 라우트에서 4xx로 응답
+export class ValidationError extends Error {}
 
 interface QueryResult<T> {
   data: T | null
@@ -83,6 +89,7 @@ function mapArticle(row: ArticleRow): Article {
     displayOrder: row.display_order,
     views: row.views,
     highlightQuote: row.highlight_quote,
+    sourceStoryId: row.source_story_id,
     createdAt: row.created_at,
   }
 }
@@ -199,7 +206,7 @@ export async function createIssue(input: Partial<Pick<Issue, 'issueNumber' | 'ti
     .select()
     .single()
 
-  if (error?.code === UNIQUE_VIOLATION) throw new Error(`${issueNumber}호가 이미 존재합니다.`)
+  if (error?.code === UNIQUE_VIOLATION) throw new ValidationError(`${issueNumber}호가 이미 존재합니다.`)
   return mapIssue(unwrap<IssueRow>({ data, error }))
 }
 
@@ -234,8 +241,6 @@ export async function createArticle(issueId: string, input: Partial<ArticleInput
   return mapArticle(unwrap<ArticleRow>({ data, error }))
 }
 
-export class ArticleValidationError extends Error {}
-
 // 요청 본문에서 수정 가능한 필드만 골라낸다 (id, views 등은 변경 불가)
 // 인용문은 본문에 실제로 있는 문장이어야 하며, 본문을 고쳐 인용문이 사라지면 인용 지정을 해제한다
 export async function updateArticle(id: string, input: Partial<ArticleInput>): Promise<Article> {
@@ -250,7 +255,7 @@ export async function updateArticle(id: string, input: Partial<ArticleInput>): P
   if (input.highlightQuote !== undefined) {
     highlightQuote = input.highlightQuote?.trim() || null
     if (highlightQuote && !content.includes(highlightQuote)) {
-      throw new ArticleValidationError('본문에 있는 문장만 인용할 수 있습니다.')
+      throw new ValidationError('본문에 있는 문장만 인용할 수 있습니다.')
     }
   } else if (highlightQuote && !content.includes(highlightQuote)) {
     highlightQuote = null
@@ -264,14 +269,14 @@ export async function updateArticle(id: string, input: Partial<ArticleInput>): P
     display_order: input.displayOrder,
     highlight_quote: highlightQuote,
   }
-  const row = unwrap<ArticleRow | null>(
-    await supabase
-      .from('articles')
-      .update(Object.fromEntries(Object.entries(changes).filter(([, value]) => value !== undefined)))
-      .eq('id', id)
-      .select()
-      .maybeSingle()
-  )
+  const { data, error } = await supabase
+    .from('articles')
+    .update(Object.fromEntries(Object.entries(changes).filter(([, value]) => value !== undefined)))
+    .eq('id', id)
+    .select()
+    .maybeSingle()
+  if (error?.code === RAISED_EXCEPTION) throw new ValidationError(error.message)
+  const row = unwrap<ArticleRow | null>({ data, error })
   if (!row) throw new Error('Article not found')
   return mapArticle(row)
 }
@@ -400,7 +405,7 @@ export async function listStoriesAdmin(): Promise<Story[]> {
   const rows = unwrap<StoryRow[]>(
     await getSupabase()
       .from('stories')
-      .select('id, cid, emotions, keywords, input_type, publish_consent, pen_name, created_at')
+      .select('id, cid, emotions, keywords, input_type, publish_consent, pen_name, created_at, articles(id)')
       .order('created_at', { ascending: false })
   )
   return Promise.all(
@@ -413,14 +418,61 @@ export async function listStoriesAdmin(): Promise<Story[]> {
       inputType: row.input_type,
       publishConsent: row.publish_consent,
       penName: row.pen_name,
+      articleId: (Array.isArray(row.articles) ? row.articles[0]?.id : row.articles?.id) ?? null,
       createdAt: row.created_at,
     }))
   )
 }
 
-export async function getStoryCipherRef(id: string): Promise<{ cid: string; wrappedKey: string } | null> {
-  const { data, error } = await getSupabase().from('stories').select('cid, wrapped_key').eq('id', id).maybeSingle()
+export interface StoryRef {
+  cid: string
+  wrappedKey: string
+  publishConsent: boolean
+  penName: string | null
+}
+
+export async function getStoryRef(id: string): Promise<StoryRef | null> {
+  const { data, error } = await getSupabase()
+    .from('stories')
+    .select('cid, wrapped_key, publish_consent, pen_name')
+    .eq('id', id)
+    .maybeSingle()
   if (error?.code === INVALID_TEXT_REPRESENTATION) return null // uuid 형식이 아닌 id
-  const row = unwrap<{ cid: string; wrapped_key: string } | null>({ data, error })
-  return row ? { cid: row.cid, wrappedKey: row.wrapped_key } : null
+  const row = unwrap<{ cid: string; wrapped_key: string; publish_consent: boolean; pen_name: string | null } | null>({ data, error })
+  return row ? { cid: row.cid, wrappedKey: row.wrapped_key, publishConsent: row.publish_consent, penName: row.pen_name } : null
+}
+
+// 학생 스토리를 기사로 — 본문과 작성자는 서버가 스토리에서 직접 채운다 (클라이언트 입력을 신뢰하지 않음)
+export async function createArticleFromStory(input: {
+  storyId: string
+  issueId: string
+  type: ArticleType
+  title: string
+  content: string
+  authorName: string
+}): Promise<Article> {
+  const supabase = getSupabase()
+  const { count, error: countError } = await supabase
+    .from('articles')
+    .select('*', { count: 'exact', head: true })
+    .eq('issue_id', input.issueId)
+  if (countError) throw new Error(countError.message)
+
+  const { data, error } = await supabase
+    .from('articles')
+    .insert({
+      issue_id: input.issueId,
+      type: input.type,
+      title: input.title,
+      content: input.content,
+      author_name: input.authorName,
+      display_order: (count ?? 0) + 1,
+      source_story_id: input.storyId,
+    })
+    .select()
+    .single()
+
+  if (error?.code === UNIQUE_VIOLATION) throw new ValidationError('이미 기사로 옮긴 스토리입니다.')
+  if (error?.code === FOREIGN_KEY_VIOLATION) throw new ValidationError('존재하지 않는 호입니다.')
+  return mapArticle(unwrap<ArticleRow>({ data, error }))
 }

@@ -36,6 +36,112 @@ const emptyArticleForm: ArticleForm = {
   displayOrder: '',
 }
 
+const QUOTE_MAX_LENGTH = 300
+
+interface SentenceSpan {
+  start: number
+  end: number
+  text: string
+}
+
+// 본문을 문장 단위로 나눈다 — 원문 위치(start/end)를 보존해 인용문을 본문 그대로 잘라낼 수 있게 함
+// 인터뷰의 "Q:" 줄은 학생의 말이 아니므로 제외하고, "A:" 표시는 문장에서 떼어낸다
+function splitSentences(content: string): SentenceSpan[] {
+  const spans: SentenceSpan[] = []
+  let lineOffset = 0
+  for (const line of content.split('\n')) {
+    const offset = lineOffset
+    lineOffset += line.length + 1
+    if (/^\s*Q:/.test(line)) continue
+
+    const label = line.match(/^\s*A:\s*/)?.[0] ?? ''
+    for (const match of line.slice(label.length).matchAll(/[^.!?]+(?:[.!?]+['"”’」)]*)?/g)) {
+      const text = match[0].trim()
+      if (!text) continue
+      const start = offset + label.length + match.index + match[0].indexOf(text)
+      spans.push({ start, end: start + text.length, text })
+    }
+  }
+  return spans
+}
+
+function findQuoteRange(spans: SentenceSpan[], content: string, quote: string | null): [number, number] | null {
+  if (!quote) return null
+  const quoteStart = content.indexOf(quote)
+  const quoteEnd = quoteStart + quote.length
+  const first = spans.findIndex((span) => span.start === quoteStart)
+  const last = spans.findIndex((span) => span.end === quoteEnd)
+  return quoteStart >= 0 && first >= 0 && last >= first ? [first, last] : null
+}
+
+// 이어진 문장만 함께 선택: 양 끝 옆 문장을 누르면 확장, 그 외에는 새로 선택, 한 문장만 선택된 상태에서 다시 누르면 해제
+function nextRange(range: [number, number] | null, index: number): [number, number] | null {
+  if (!range) return [index, index]
+  const [first, last] = range
+  if (first === last && index === first) return null
+  if (index === last + 1) return [first, index]
+  if (index === first - 1) return [index, last]
+  return [index, index]
+}
+
+function QuoteSelector({ article, onSave, onRemove, onCancel }: {
+  article: Article
+  onSave: (quote: string) => void
+  onRemove: () => void
+  onCancel: () => void
+}) {
+  const { t } = useI18n()
+  const spans = splitSentences(article.content)
+  const [range, setRange] = useState(() => findQuoteRange(spans, article.content, article.highlightQuote))
+  const quote = range ? article.content.slice(spans[range[0]].start, spans[range[1]].end) : ''
+  const tooLong = quote.length > QUOTE_MAX_LENGTH
+
+  return (
+    <div className="mx-5 mb-4 p-4 bg-amber-50/60 rounded-xl space-y-3">
+      <p className="text-xs font-medium text-slate-600">{t.adminContent.voiceLabel}</p>
+      <div className="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto">
+        {spans.map((span, index) => {
+          const selected = range !== null && index >= range[0] && index <= range[1]
+          return (
+            <button
+              key={span.start}
+              type="button"
+              onClick={() => setRange(nextRange(range, index))}
+              className={`text-left text-sm px-2.5 py-1.5 rounded-lg border transition-colors ${
+                selected ? 'bg-amber-400 border-amber-400 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-amber-300'
+              }`}
+            >
+              {span.text}
+            </button>
+          )
+        })}
+      </div>
+      <p className="text-xs text-slate-500">{t.adminContent.voiceHint}</p>
+      {tooLong && <p className="text-xs text-red-500">{t.adminContent.voiceTooLong}</p>}
+      <div className="flex gap-2">
+        <button
+          onClick={() => onSave(quote)}
+          disabled={!quote || tooLong || quote === article.highlightQuote}
+          className="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-medium hover:bg-amber-400 disabled:opacity-40"
+        >
+          {t.adminContent.save}
+        </button>
+        {article.highlightQuote && (
+          <button
+            onClick={onRemove}
+            className="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs text-slate-600 hover:border-slate-400"
+          >
+            {t.adminContent.voiceRemove}
+          </button>
+        )}
+        <button onClick={onCancel} className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700">
+          {t.adminContent.cancel}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function ContentPage() {
   const { t } = useI18n()
   const [issues, setIssues] = useState<IssueWithArticles[]>([])
@@ -53,7 +159,7 @@ export default function ContentPage() {
   })
   const [showNewIssueForm, setShowNewIssueForm] = useState(false)
   const [msg, setMsg] = useState('')
-  const [quoteDraft, setQuoteDraft] = useState<{ articleId: string; quote: string } | null>(null)
+  const [quoteArticleId, setQuoteArticleId] = useState<string | null>(null)
 
   const loadIssues = async () => {
     const res = await fetch('/api/admin/issues', { headers: { Authorization: `Bearer ${getToken()}` } })
@@ -75,13 +181,26 @@ export default function ContentPage() {
       body: JSON.stringify({ ...newIssueForm, issueNumber: Number(newIssueForm.issueNumber) }),
     })
     const json = await res.json()
-    if (res.ok && json.success) {
-      setNewIssueForm({ issueNumber: '', title: '', theme: '', editorNote: '' })
-      setShowNewIssueForm(false)
-      loadIssues()
-      flash(t.adminContent.alerts.issueCreated)
+    if (!json.success) {
+      alert(json.error)
+      return
     }
+    setNewIssueForm({ issueNumber: '', title: '', theme: '', editorNote: '' })
+    setShowNewIssueForm(false)
+    loadIssues()
+    flash(t.adminContent.alerts.issueCreated)
   }
+
+  // 새 이슈 폼을 열 때 다음 호수(현재 최대 + 1)를 미리 채운다
+  const toggleNewIssueForm = () => {
+    if (!showNewIssueForm) {
+      const nextNumber = Math.max(0, ...issues.map((issue) => issue.issueNumber)) + 1
+      setNewIssueForm((p) => ({ ...p, issueNumber: String(nextNumber) }))
+    }
+    setShowNewIssueForm((v) => !v)
+  }
+
+  const isDuplicateIssueNumber = issues.some((issue) => issue.issueNumber === Number(newIssueForm.issueNumber))
 
   const publishIssue = async (id: string) => {
     if (!confirm(t.adminContent.alerts.confirmPublish)) return
@@ -149,7 +268,7 @@ export default function ContentPage() {
       alert(json.error)
       return
     }
-    setQuoteDraft(null)
+    setQuoteArticleId(null)
     loadIssues()
     flash(quote ? t.adminContent.alerts.voiceSaved : t.adminContent.alerts.voiceRemoved)
   }
@@ -178,6 +297,8 @@ export default function ContentPage() {
     setArticleForm(emptyArticleForm)
   }
 
+  const isFromStory = !!editingArticle?.sourceStoryId
+
   const typeLabel = (type: string) => (t.adminContent.types as Record<string, string>)[type] ?? ARTICLE_TYPES.find((tt) => tt.value === type)?.label ?? type
 
   const totalPages = Math.max(1, Math.ceil(issues.length / itemsPerPage))
@@ -188,7 +309,7 @@ export default function ContentPage() {
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-slate-800">{t.adminContent.title}</h1>
         <button
-          onClick={() => setShowNewIssueForm((v) => !v)}
+          onClick={toggleNewIssueForm}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-500 transition-colors"
         >
           <Plus size={16} />
@@ -209,7 +330,10 @@ export default function ContentPage() {
               <label className="block text-xs text-slate-500 mb-1">{t.adminContent.issueNum}</label>
               <input type="number" min="1" required value={newIssueForm.issueNumber}
                 onChange={(e) => setNewIssueForm((p) => ({ ...p, issueNumber: e.target.value }))}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" />
+                className={`w-full border rounded-xl px-3 py-2 text-sm ${isDuplicateIssueNumber ? 'border-red-300 bg-red-50' : 'border-slate-200'}`} />
+              {isDuplicateIssueNumber && (
+                <p className="text-xs text-red-500 mt-1">{t.adminContent.duplicateIssueNumber}</p>
+              )}
             </div>
             <div>
               <label className="block text-xs text-slate-500 mb-1">{t.adminContent.itemTitle}</label>
@@ -231,7 +355,7 @@ export default function ContentPage() {
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm resize-none" />
           </div>
           <div className="flex gap-3">
-            <button type="submit" className="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm hover:bg-slate-700">{t.adminContent.create}</button>
+            <button type="submit" disabled={isDuplicateIssueNumber} className="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed">{t.adminContent.create}</button>
             <button type="button" onClick={() => setShowNewIssueForm(false)} className="px-4 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:border-slate-400">{t.adminContent.cancel}</button>
           </div>
         </form>
@@ -269,14 +393,17 @@ export default function ContentPage() {
             <label className="block text-xs text-slate-500 mb-1">{t.adminContent.authorLabel}</label>
             <input required value={articleForm.authorName}
               onChange={(e) => setArticleForm((p) => ({ ...p, authorName: e.target.value }))}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+              disabled={isFromStory}
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-500"
               placeholder={t.adminContent.authorPlaceholder} />
           </div>
           <div>
             <label className="block text-xs text-slate-500 mb-1">{t.adminContent.contentBody}</label>
             <textarea rows={8} required value={articleForm.content}
               onChange={(e) => setArticleForm((p) => ({ ...p, content: e.target.value }))}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm resize-none" />
+              disabled={isFromStory}
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm resize-none disabled:bg-slate-50 disabled:text-slate-500" />
+            {isFromStory && <p className="text-xs text-amber-600 mt-1.5">{t.adminContent.lockedFromStory}</p>}
           </div>
           <div className="flex gap-3">
             <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-500">{t.adminContent.save}</button>
@@ -348,7 +475,7 @@ export default function ContentPage() {
                         )}
                         <span className="text-xs text-slate-400"><AITranslatedText text={article.authorName} as="span" /></span>
                         <button
-                          onClick={() => setQuoteDraft({ articleId: article.id, quote: article.highlightQuote ?? '' })}
+                          onClick={() => setQuoteArticleId(quoteArticleId === article.id ? null : article.id)}
                           title={t.adminContent.voiceBtn}
                           className="p-1.5 hover:bg-amber-50 rounded-lg text-amber-500"
                         >
@@ -361,40 +488,13 @@ export default function ContentPage() {
                           <Trash2 size={14} />
                         </button>
                       </div>
-                      {quoteDraft?.articleId === article.id && (
-                        <div className="mx-5 mb-4 p-4 bg-amber-50/60 rounded-xl space-y-2">
-                          <label className="block text-xs font-medium text-slate-600">{t.adminContent.voiceLabel}</label>
-                          <textarea
-                            rows={2}
-                            value={quoteDraft.quote}
-                            onChange={(e) => setQuoteDraft({ ...quoteDraft, quote: e.target.value })}
-                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm resize-none bg-white"
-                          />
-                          <p className="text-xs text-slate-500">{t.adminContent.voiceHint}</p>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => saveQuote(article.id, quoteDraft.quote)}
-                              disabled={!quoteDraft.quote.trim()}
-                              className="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-medium hover:bg-amber-400 disabled:opacity-40"
-                            >
-                              {t.adminContent.save}
-                            </button>
-                            {article.highlightQuote && (
-                              <button
-                                onClick={() => saveQuote(article.id, null)}
-                                className="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs text-slate-600 hover:border-slate-400"
-                              >
-                                {t.adminContent.voiceRemove}
-                              </button>
-                            )}
-                            <button
-                              onClick={() => setQuoteDraft(null)}
-                              className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700"
-                            >
-                              {t.adminContent.cancel}
-                            </button>
-                          </div>
-                        </div>
+                      {quoteArticleId === article.id && (
+                        <QuoteSelector
+                          article={article}
+                          onSave={(quote) => saveQuote(article.id, quote)}
+                          onRemove={() => saveQuote(article.id, null)}
+                          onCancel={() => setQuoteArticleId(null)}
+                        />
                       )}
                       </div>
                     ))

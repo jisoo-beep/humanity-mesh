@@ -1,4 +1,4 @@
-import { getAllIssuesAdmin, createIssue } from '@/lib/repository'
+import { getAllIssuesAdmin, createIssue, ValidationError } from '@/lib/repository'
 import { isAuthenticated } from '@/lib/auth'
 
 export async function GET(request: Request) {
@@ -22,6 +22,7 @@ export async function POST(request: Request) {
     const newIssue = await createIssue(data)
     return Response.json({ success: true, data: newIssue }, { status: 201 })
   } catch (error) {
-    return Response.json({ success: false, error: (error as Error).message }, { status: 500 })
+    const status = error instanceof ValidationError ? 409 : 500
+    return Response.json({ success: false, error: (error as Error).message }, { status })
   }
 }
