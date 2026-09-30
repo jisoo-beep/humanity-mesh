@@ -17,6 +17,7 @@ BEGIN;
 CREATE SCHEMA IF NOT EXISTS storytech;
 
 DROP FUNCTION IF EXISTS storytech.increment_article_views(text);
+DROP FUNCTION IF EXISTS storytech.protect_story_articles() CASCADE;
 DROP TABLE IF EXISTS storytech.articles CASCADE;
 DROP TABLE IF EXISTS storytech.issues CASCADE;
 DROP TABLE IF EXISTS storytech.stories CASCADE;
@@ -80,11 +81,36 @@ CREATE TABLE storytech.articles (
   views         integer     NOT NULL DEFAULT 0 CHECK (views >= 0),
   -- 임팩트 섹션 "학생들의 목소리"에 쓰이는 인용문 — 본문에 실제로 있는 문장만 허용
   highlight_quote text      CHECK (char_length(btrim(highlight_quote)) BETWEEN 1 AND 300),
+  -- 학생 스토리에서 옮긴 기사: 스토리당 하나, 스토리 삭제(삭제 요청) 시 기사도 함께 삭제
+  source_story_id uuid      UNIQUE REFERENCES storytech.stories (id) ON DELETE CASCADE,
   created_at    timestamptz NOT NULL DEFAULT now(),
   CHECK (highlight_quote IS NULL OR strpos(content, highlight_quote) > 0)
 );
 
 CREATE INDEX articles_issue_id_idx ON storytech.articles (issue_id, display_order);
+
+-- 학생 스토리에서 옮긴 기사는 학생이 동의한 글 그대로 유지 (본문·작성자·출처 수정 불가)
+CREATE FUNCTION storytech.protect_story_articles()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+BEGIN
+  IF OLD.source_story_id IS NOT NULL AND (
+    NEW.content IS DISTINCT FROM OLD.content
+    OR NEW.author_name IS DISTINCT FROM OLD.author_name
+    OR NEW.source_story_id IS DISTINCT FROM OLD.source_story_id
+  ) THEN
+    RAISE EXCEPTION '학생 스토리에서 옮긴 기사는 본문과 작성자를 수정할 수 없습니다.'
+      USING ERRCODE = 'P0001';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER articles_protect_story_source
+  BEFORE UPDATE ON storytech.articles
+  FOR EACH ROW EXECUTE FUNCTION storytech.protect_story_articles();
 
 -- 조회수 원자적 증가 (동시 요청에도 누락 없음)
 CREATE FUNCTION storytech.increment_article_views(p_article_id text)

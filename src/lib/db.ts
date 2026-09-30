@@ -10,6 +10,7 @@ export interface Article {
   displayOrder: number
   views: number
   highlightQuote: string | null  // 임팩트 섹션 "학생들의 목소리"에 쓰이는 본문 인용
+  sourceStoryId: string | null   // 학생 스토리에서 옮긴 기사 — 본문·작성자 수정 불가
   createdAt: string
 }
 
@@ -53,6 +54,7 @@ export interface Story {
   inputType: InputType
   publishConsent: boolean
   penName: string | null
+  articleId: string | null  // 이미 기사로 옮겼다면 그 기사 id
   createdAt: string
 }
 

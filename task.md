@@ -36,6 +36,12 @@
 - [x] Admin stories: "기사로 옮기기" (move consented story to a magazine article, author fixed to student's pen name)
 - [x] Student Voices: admin picks a sentence from a published article (`articles.highlight_quote`); DB rejects quotes not in the article body; editing the body clears a quote that no longer exists
 - [x] Seed 5 initial voices from existing article sentences
+- [x] Story-sourced articles are immutable: server-side move endpoint (consent check, body + pen name from the story), `articles.source_story_id` (one article per story, cascade on story delete), DB trigger blocks body/author edits; UI locks those fields
+- [x] Run `source_story_id` migration on Supabase (verified on live DB: move 201, duplicate 409, no consent 403, body/author edit 400, title edit 200)
+- [x] Student Voices picker: select whole sentences from the article body (no free text); interview `Q:` lines excluded, `A:` labels stripped
+- [x] Consent copy covers both magazine publishing and quoting in Student Voices
+- [x] Duplicate issue numbers: next number prefilled, inline warning, 409 from API
+- [x] Decision: Student Voices stay magazine-quote-only (no free-text admin input) — revisit if offline testimonials are needed (would require a `voices` table with a mandatory source field)
 
 ## Dummy Data (one-time)
 - [x] 20 dummy access keys (`storytech-dummy-N` hashes, not usable for login)

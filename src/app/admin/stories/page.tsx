@@ -15,7 +15,6 @@ interface ArticleDraft {
   issueId: string
   type: ArticleType
   title: string
-  content: string
 }
 
 export default function AdminStoriesPage() {
@@ -74,26 +73,24 @@ export default function AdminStoriesPage() {
     const json = await res.json()
     const loadedIssues: IssueWithArticles[] = json.success ? json.data.issues : []
     setIssues(loadedIssues)
-    setDraft({ issueId: loadedIssues[0]?.id ?? '', type: 'story', title: '', content: selectedStory.text })
+    setDraft({ issueId: loadedIssues[0]?.id ?? '', type: 'story', title: '' })
   }
 
   const saveArticle = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedStory || !draft) return
-    const issue = issues.find((i) => i.id === draft.issueId)
+    const storyId = selectedStory.story.id
     setSaving(true)
     try {
-      const res = await fetch('/api/admin/articles', {
+      // 본문·작성자·게재 동의 확인은 서버가 스토리에서 직접 처리
+      const res = await fetch(`/api/admin/stories/${storyId}/article`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({
-          ...draft,
-          authorName: selectedStory.story.penName ?? s.anonymous,
-          displayOrder: (issue?.articles.length ?? 0) + 1,
-        }),
+        body: JSON.stringify(draft),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
+      setStories((prev) => prev.map((story) => (story.id === storyId ? { ...story, articleId: json.data.id } : story)))
       alert(s.articleSaved)
       closeModal()
     } catch (err) {
@@ -129,7 +126,7 @@ export default function AdminStoriesPage() {
 
   return (
     <div className="max-w-6xl">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div className="mb-10 space-y-6">
         <div>
           <div className="inline-flex items-center gap-2 text-indigo-600 mb-2 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest text-[10px] font-bold">
             <Shield size={14} />
@@ -139,13 +136,13 @@ export default function AdminStoriesPage() {
           <p className="text-slate-500 mt-2">{s.subtitle}</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex bg-white p-1 rounded-xl border border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex h-10 items-center shrink-0 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
             {(['all', 'voice', 'text', 'consented'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                   filter === f ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
@@ -160,7 +157,7 @@ export default function AdminStoriesPage() {
               placeholder={s.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48 shadow-sm"
+              className="h-10 pl-9 pr-4 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64 shadow-sm"
             />
           </div>
         </div>
@@ -198,6 +195,7 @@ export default function AdminStoriesPage() {
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 text-[11px] font-bold">
                     <BadgeCheck size={13} />
                     {s.consentBadge} · {story.penName ?? s.anonymous}
+                    {story.articleId && <span className="text-indigo-600">· {s.alreadyMoved}</span>}
                   </div>
                 )}
                 <div className="flex flex-wrap gap-1.5">
@@ -335,13 +333,9 @@ export default function AdminStoriesPage() {
                 </div>
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">{s.articleBody}</label>
-                  <textarea
-                    required
-                    rows={10}
-                    value={draft.content}
-                    onChange={(e) => setDraft({ ...draft, content: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm resize-none"
-                  />
+                  <p className="max-h-60 overflow-y-auto px-3 py-2 text-sm bg-slate-50 rounded-xl text-slate-700 whitespace-pre-wrap leading-relaxed">
+                    {selectedStory.text}
+                  </p>
                 </div>
                 <div className="flex gap-3">
                   <button
@@ -375,7 +369,12 @@ export default function AdminStoriesPage() {
                 </div>
 
                 <div className="p-8 pt-0 flex gap-3">
-                  {selectedStory.story.publishConsent && (
+                  {selectedStory.story.articleId ? (
+                    <div className="flex-1 py-4 rounded-2xl bg-slate-50 text-slate-500 font-bold flex items-center justify-center gap-2">
+                      <FileText size={16} />
+                      {s.alreadyMoved}
+                    </div>
+                  ) : selectedStory.story.publishConsent && (
                     <button
                       onClick={startArticleDraft}
                       className="flex-1 py-4 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2"
