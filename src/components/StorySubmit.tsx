@@ -8,7 +8,7 @@ import {
 import { useI18n } from '@/lib/i18n'
 
 type InputMode = 'voice' | 'text'
-type PipelineStep = 'idle' | 'anonymizing' | 'uploading' | 'done' | 'error'
+type PipelineStep = 'idle' | 'processing' | 'done' | 'error'
 
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList
@@ -30,6 +30,8 @@ export default function StorySubmit() {
   const [resultCid, setResultCid] = useState('')
   const [resultUrl, setResultUrl] = useState('')
   const [error, setError] = useState('')
+  const [publishConsent, setPublishConsent] = useState(false)
+  const [penName, setPenName] = useState('')
   const [speechSupported, setSpeechSupported] = useState(true)
   const [isSpeaking, setIsSpeaking] = useState(false)
 
@@ -147,24 +149,20 @@ export default function StorySubmit() {
     const text = transcript.trim()
     if (!text || text.length < 10) return
     setError('')
-    setPipelineStep('anonymizing')
+    setPipelineStep('processing')
     try {
-      const anonRes = await fetch('/api/ai/anonymize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      })
-      if (!anonRes.ok) throw new Error('Anonymization failed')
-      const { anonymizedText } = await anonRes.json()
-
-      setPipelineStep('uploading')
+      // 익명화 → 암호화 → IPFS 업로드는 서버에서 한 번에 처리
       const submitRes = await fetch('/api/stories/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: anonymizedText, inputType: mode }),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Access-Key': localStorage.getItem('access_key') ?? '',
+        },
+        body: JSON.stringify({ text, inputType: mode, publishConsent, penName: publishConsent ? penName : '' }),
       })
-      if (!submitRes.ok) throw new Error('Upload failed')
-      const { cid, ipfsUrl } = await submitRes.json()
+      const json = await submitRes.json()
+      if (!submitRes.ok) throw new Error(json.error ?? 'Upload failed')
+      const { cid, ipfsUrl } = json
 
       setResultCid(cid)
       setResultUrl(ipfsUrl)
@@ -179,6 +177,7 @@ export default function StorySubmit() {
   const reset = () => {
     setTranscript(''); setInterim('')
     setPipelineStep('idle'); setResultCid(''); setResultUrl(''); setError('')
+    setPublishConsent(false); setPenName('')
     localStorage.removeItem('story_draft')
   }
 
@@ -187,13 +186,12 @@ export default function StorySubmit() {
   }
 
   const STEPS = [
-    { key: 'anonymizing', label: s.stepAnonymize, icon: Shield },
-    { key: 'uploading', label: s.stepUpload, icon: Upload },
+    { key: 'anonymize', label: s.stepAnonymize, icon: Shield },
+    { key: 'upload', label: s.stepUpload, icon: Upload },
     { key: 'done', label: s.stepDone, icon: CheckCircle },
   ] as const
 
-  const currentStepIdx = STEPS.findIndex((st) => st.key === pipelineStep)
-  const isProcessing = pipelineStep === 'anonymizing' || pipelineStep === 'uploading'
+  const isProcessing = pipelineStep === 'processing'
   const isDone = pipelineStep === 'done'
 
   return (
@@ -332,19 +330,49 @@ export default function StorySubmit() {
               </div>
             )}
 
+            {/* Magazine publish consent */}
+            <div className="mb-6 p-4 rounded-xl border border-slate-200 space-y-3">
+              <label className="flex items-start gap-2.5 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={publishConsent}
+                  onChange={(e) => setPublishConsent(e.target.checked)}
+                  disabled={isProcessing}
+                  className="mt-0.5 accent-emerald-600"
+                />
+                <span>
+                  {s.consentLabel}
+                  <span className="block text-xs text-slate-400 mt-0.5">{s.consentHint}</span>
+                </span>
+              </label>
+              {publishConsent && (
+                <div>
+                  <input
+                    value={penName}
+                    onChange={(e) => setPenName(e.target.value)}
+                    disabled={isProcessing}
+                    maxLength={30}
+                    placeholder={s.penNamePlaceholder}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                  />
+                  <p className="text-xs text-amber-600 mt-1.5">{s.penNameWarning}</p>
+                </div>
+              )}
+            </div>
+
             {/* Pipeline progress */}
             {isProcessing && (
               <div className="mb-6 p-4 bg-slate-50 rounded-xl">
                 <div className="flex items-center justify-between">
-                  {STEPS.map(({ key, label, icon: Icon }, i) => (
+                  {STEPS.map(({ key, label, icon: Icon }) => (
                     <div key={key} className="flex flex-col items-center gap-1 flex-1">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${i < currentStepIdx ? 'bg-emerald-500 text-white'
-                          : i === currentStepIdx ? 'bg-indigo-500 text-white animate-pulse'
-                            : 'bg-slate-200 text-slate-400'
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${key !== 'done'
+                          ? 'bg-indigo-500 text-white animate-pulse'
+                          : 'bg-slate-200 text-slate-400'
                         }`}>
                         <Icon size={14} />
                       </div>
-                      <span className={`text-xs ${i <= currentStepIdx ? 'text-slate-700' : 'text-slate-400'}`}>
+                      <span className={`text-xs ${key !== 'done' ? 'text-slate-700' : 'text-slate-400'}`}>
                         {label}
                       </span>
                     </div>

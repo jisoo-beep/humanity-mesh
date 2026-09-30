@@ -1,10 +1,10 @@
-import { getIssues } from '@/lib/mockData'
+import { getPublishedIssues } from '@/lib/repository'
 
 export async function GET() {
   try {
-    const issues = await getIssues()
+    const issues = await getPublishedIssues()
     return Response.json({ success: true, data: { issues } })
-  } catch (error: any) {
-    return Response.json({ success: false, error: error.message }, { status: 500 })
+  } catch (error) {
+    return Response.json({ success: false, error: (error as Error).message }, { status: 500 })
   }
 }

@@ -1,6 +1,3 @@
-import fs from 'fs'
-import path from 'path'
-
 export type ArticleType = 'interview' | 'story' | 'review'
 
 export interface Article {
@@ -11,9 +8,15 @@ export interface Article {
   content: string
   authorName: string
   displayOrder: number
+  views: number
+  highlightQuote: string | null  // 임팩트 섹션 "학생들의 목소리"에 쓰이는 본문 인용
   createdAt: string
-  featuredImage?: string
-  views?: number
+}
+
+// 발행된 매거진 기사에서 관리자가 고른 인용문
+export interface Voice {
+  quote: string
+  author: string
 }
 
 export interface Issue {
@@ -23,70 +26,38 @@ export interface Issue {
   theme: string
   editorNote: string
   isPublished: boolean
-  publishedAt?: string
+  publishedAt: string | null
   createdAt: string
-  coverImage?: string
 }
 
 export interface IssueWithArticles extends Issue {
   articles: Article[]
 }
 
-export interface Stats {
+export interface ImpactStats {
   totalStudents: number
   totalStories: number
   emotionData: Record<string, number>
-  testimonials: Array<{ quote: string; author: string }>
 }
 
 export type InputType = 'voice' | 'text'
+export type Gender = 'male' | 'female' | 'other'
 
+// 관리자 목록용 스토리 메타데이터 (본문은 IPFS에 암호문으로만 존재)
 export interface Story {
   id: string
-  cid: string        // IPFS CID
-  ipfsUrl: string    // public gateway URL
-  iv: string         // AES-GCM IV (hex)
-  tag: string        // AES-GCM auth tag (hex)
+  cid: string
+  ipfsUrl: string
   emotions: Record<string, number>
   keywords: string[]
   inputType: InputType
-  preview: string    // first 60 chars of anonymized text (for archive)
+  publishConsent: boolean
+  penName: string | null
   createdAt: string
 }
 
-export interface AccessKey {
-  key: string          // e.g. "ST-A3K9X2"
+export interface AccessKeyInfo {
   age: number
-  gender: string       // 'male' | 'female' | 'other'
+  gender: Gender
   createdAt: string
-  usedAt?: string      // 첫 로그인 시각 (나중에 실제 결제와 연동 시 활용)
-}
-
-export interface DB {
-  issues: Issue[]
-  articles: Article[]
-  stats: Stats
-  stories: Story[]
-  accessKeys: AccessKey[]
-}
-
-const DB_PATH = path.join(process.cwd(), 'data', 'db.json')
-
-export function readDB(): DB {
-  const raw = fs.readFileSync(DB_PATH, 'utf-8')
-  return JSON.parse(raw) as DB
-}
-
-export function writeDB(db: DB): void {
-  try {
-    fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8')
-  } catch (error) {
-    // 서버리스 배포 환경(Amplify 등)에서는 파일 쓰기가 불가능하므로,
-    // 데모 진행 시 API 500 에러를 방지하기 위해 콘솔 로그에만 남기고 예외는 던지지 않습니다.
-    console.warn('Database write bypassed in serverless environment:', error)
-  }
-}
-
-export function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
 }

@@ -1,4 +1,4 @@
-import { publishIssue } from '@/lib/mockData'
+import { publishIssue } from '@/lib/repository'
 import { isAuthenticated } from '@/lib/auth'
 
 export async function POST(
@@ -12,7 +12,7 @@ export async function POST(
   try {
     const issue = await publishIssue(id)
     return Response.json({ success: true, data: issue })
-  } catch (err: any) {
-    return Response.json({ success: false, error: err.message }, { status: 404 })
+  } catch (err) {
+    return Response.json({ success: false, error: (err as Error).message }, { status: 404 })
   }
 }

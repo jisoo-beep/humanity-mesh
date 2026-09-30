@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ChevronDown, ChevronUp, Plus, Pencil, Trash2, Send } from 'lucide-react'
+import { ChevronDown, ChevronUp, Plus, Pencil, Trash2, Send, Quote } from 'lucide-react'
 import { useI18n } from '@/lib/i18n'
 import AITranslatedText from '@/components/AITranslatedText'
 import type { Issue, Article, ArticleType, IssueWithArticles } from '@/lib/db'
@@ -53,6 +53,7 @@ export default function ContentPage() {
   })
   const [showNewIssueForm, setShowNewIssueForm] = useState(false)
   const [msg, setMsg] = useState('')
+  const [quoteDraft, setQuoteDraft] = useState<{ articleId: string; quote: string } | null>(null)
 
   const loadIssues = async () => {
     const res = await fetch('/api/admin/issues', { headers: { Authorization: `Bearer ${getToken()}` } })
@@ -134,6 +135,23 @@ export default function ContentPage() {
       loadIssues()
       flash(t.adminContent.alerts.deletedSuccess)
     }
+  }
+
+  // 인용문 저장 — quote가 null이면 "학생들의 목소리"에서 내림
+  const saveQuote = async (articleId: string, quote: string | null) => {
+    const res = await fetch(`/api/admin/articles/${articleId}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ highlightQuote: quote }),
+    })
+    const json = await res.json()
+    if (!json.success) {
+      alert(json.error)
+      return
+    }
+    setQuoteDraft(null)
+    loadIssues()
+    flash(quote ? t.adminContent.alerts.voiceSaved : t.adminContent.alerts.voiceRemoved)
   }
 
   const startEdit = (article: Article) => {
@@ -316,19 +334,68 @@ export default function ContentPage() {
                   [...issue.articles]
                     .sort((a, b) => a.displayOrder - b.displayOrder)
                     .map((article) => (
-                      <div key={article.id} className="flex items-center gap-3 px-5 py-3">
+                      <div key={article.id}>
+                      <div className="flex items-center gap-3 px-5 py-3">
                         <span className="text-xs text-slate-400 w-4">{article.displayOrder}</span>
                         <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">
                           {typeLabel(article.type)}
                         </span>
                         <span className="flex-1 text-sm text-slate-700 truncate"><AITranslatedText text={article.title} as="span" /></span>
+                        {article.highlightQuote && (
+                          <span className="text-[10px] px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full font-medium">
+                            {t.adminContent.voiceBadge}
+                          </span>
+                        )}
                         <span className="text-xs text-slate-400"><AITranslatedText text={article.authorName} as="span" /></span>
+                        <button
+                          onClick={() => setQuoteDraft({ articleId: article.id, quote: article.highlightQuote ?? '' })}
+                          title={t.adminContent.voiceBtn}
+                          className="p-1.5 hover:bg-amber-50 rounded-lg text-amber-500"
+                        >
+                          <Quote size={14} />
+                        </button>
                         <button onClick={() => startEdit(article)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500">
                           <Pencil size={14} />
                         </button>
                         <button onClick={() => deleteArticle(article.id)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
                           <Trash2 size={14} />
                         </button>
+                      </div>
+                      {quoteDraft?.articleId === article.id && (
+                        <div className="mx-5 mb-4 p-4 bg-amber-50/60 rounded-xl space-y-2">
+                          <label className="block text-xs font-medium text-slate-600">{t.adminContent.voiceLabel}</label>
+                          <textarea
+                            rows={2}
+                            value={quoteDraft.quote}
+                            onChange={(e) => setQuoteDraft({ ...quoteDraft, quote: e.target.value })}
+                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm resize-none bg-white"
+                          />
+                          <p className="text-xs text-slate-500">{t.adminContent.voiceHint}</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => saveQuote(article.id, quoteDraft.quote)}
+                              disabled={!quoteDraft.quote.trim()}
+                              className="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-medium hover:bg-amber-400 disabled:opacity-40"
+                            >
+                              {t.adminContent.save}
+                            </button>
+                            {article.highlightQuote && (
+                              <button
+                                onClick={() => saveQuote(article.id, null)}
+                                className="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs text-slate-600 hover:border-slate-400"
+                              >
+                                {t.adminContent.voiceRemove}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setQuoteDraft(null)}
+                              className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700"
+                            >
+                              {t.adminContent.cancel}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       </div>
                     ))
                 )}

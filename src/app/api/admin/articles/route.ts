@@ -1,4 +1,4 @@
-import { createArticle } from '@/lib/mockData'
+import { createArticle } from '@/lib/repository'
 import { isAuthenticated } from '@/lib/auth'
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     }
     const newArticle = await createArticle(issueId, data)
     return Response.json({ success: true, data: newArticle }, { status: 201 })
-  } catch (err: any) {
-    return Response.json({ success: false, error: err.message }, { status: 500 })
+  } catch (err) {
+    return Response.json({ success: false, error: (err as Error).message }, { status: 500 })
   }
 }

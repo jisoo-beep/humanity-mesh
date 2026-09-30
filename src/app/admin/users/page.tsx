@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
+import type { AccessKeyInfo } from '@/lib/db'
 import {
   Users, Key, Calendar, Search,
   PieChart as PieIcon, BarChart3 as BarIcon,
@@ -13,16 +14,9 @@ import {
   PieChart, Pie, Cell, Legend 
 } from 'recharts'
 
-interface UserAccessKey {
-  key: string
-  age: number
-  gender: string
-  createdAt: string
-}
-
 export default function AdminUsers() {
   const { t, lang } = useI18n()
-  const [users, setUsers] = useState<UserAccessKey[]>([])
+  const [users, setUsers] = useState<AccessKeyInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female' | 'other'>('all')

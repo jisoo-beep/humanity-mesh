@@ -8,8 +8,8 @@
 
 ```
 story-tech/
-├── data/
-│   └── db.json                    # 파일 기반 데이터베이스 (Issues, Articles, Stories, Stats)
+├── schema.sql                     # Supabase DDL + 초기 데이터 (storytech 스키마)
+├── .env.example                   # 환경 변수 템플릿 (발급 경로 안내 포함)
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx               # 메인 홈페이지
@@ -36,14 +36,13 @@ story-tech/
 │   │       │   └── analytics/     # GET — 분석 데이터
 │   │       ├── ai/
 │   │       │   ├── analyze/       # POST — 글쓰기 분석 (AI)
-│   │       │   ├── anonymize/     # POST — 개인정보 익명화 (AI)
 │   │       │   ├── expand/        # POST — 문장 확장 제안 (AI)
 │   │       │   └── translate/     # POST — 텍스트 번역 (AI)
 │   │       ├── issues/            # GET — 공개 이슈 조회
 │   │       ├── articles/          # GET — 아티클 조회 + 조회수 카운팅
-│   │       ├── stories/submit/    # POST — 스토리 제출 (익명화 → 암호화 → IPFS)
-│   │       ├── stats/             # GET — 공개 임팩트 통계
-│   │       └── upload/            # POST — 파일 업로드 (Pinata)
+│   │       ├── stories/submit/    # POST — 스토리 제출 (접속 키 필요, 익명화 → 암호화 → IPFS)
+│   │       ├── payment/           # POST 접속 키 발급 / GET 접속 키 검증
+│   │       └── stats/             # GET — 공개 임팩트 통계
 │   ├── components/
 │   │   ├── Navigation.tsx         # 상단 네비게이션 (언어 토글 포함)
 │   │   ├── Hero.tsx               # 히어로 섹션
@@ -52,61 +51,35 @@ story-tech/
 │   │   ├── AILab.tsx              # AI 글쓰기 연구소 컴포넌트
 │   │   ├── AITranslatedText.tsx   # AI 실시간 번역 텍스트 컴포넌트
 │   │   ├── StorySubmit.tsx        # 익명 스토리 제출 폼
-│   │   ├── StoryArchive.tsx       # 공개 스토리 아카이브
 │   │   ├── Impact.tsx             # 임팩트 수치 섹션
 │   │   ├── Footer.tsx             # 푸터
 │   │   └── AdminShell.tsx         # 어드민 공통 레이아웃 (사이드바)
 │   └── lib/
-│       ├── db.ts                  # 파일 DB 읽기/쓰기 유틸리티
+│       ├── db.ts                  # 공용 도메인 타입 (Issue, Article, Story …)
+│       ├── supabase.ts            # 서버 전용 Supabase 클라이언트 (service_role)
+│       ├── repository.ts          # DB 조회/저장 함수 (snake_case 행 ↔ camelCase 타입)
+│       ├── anonymize.ts           # AI 익명화 (실패 시 예외 — 원문 저장 차단)
 │       ├── i18n.tsx               # 다국어(KO/EN) Context Provider
 │       ├── auth.ts                # 어드민 토큰 인증 유틸리티
 │       ├── pinata.ts              # Pinata IPFS SDK 래퍼
-│       ├── story-crypto.ts        # AES-256-GCM 암호화/복호화
-│       └── mockData.ts            # 개발용 목업 데이터
+│       └── story-crypto.ts        # AES-256-GCM 봉투 암호화/복호화
 ```
 
 ---
 
-## 🗄️ 데이터 모델 (data/db.json)
+## 🗄️ 데이터 모델 (Supabase `storytech` 스키마)
 
-### Issue (매거진 이슈)
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| `id` | string | 고유 ID (timestamp + random) |
-| `issueNumber` | number | 호수 (Vol. 1, 2 …) |
-| `title` | string | 이슈 제목 |
-| `theme` | string | 주제 키워드 |
-| `editorNote` | string | 편집자 노트 |
-| `isPublished` | boolean | 공개 여부 |
-| `publishedAt` | string? | 발행 일시 |
-| `createdAt` | string | 생성 일시 |
-| `coverImage` | string? | 커버 이미지 URL |
+전체 DDL과 초기 데이터는 `schema.sql` 참고. 모든 테이블은 RLS 활성화 + 정책 없음 → 서버의 service_role 키로만 접근.
 
-### Article (아티클)
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| `id` | string | 고유 ID |
-| `issueId` | string | 소속 Issue ID (FK) |
-| `type` | `'interview' \| 'story' \| 'review'` | 아티클 타입 |
-| `title` | string | 아티클 제목 |
-| `content` | string | 본문 |
-| `authorName` | string | 저자명 (익명 가능) |
-| `displayOrder` | number | 목차 순서 |
-| `views` | number? | 조회수 |
+| 테이블 | 주요 컬럼 | 비고 |
+|--------|----------|------|
+| `access_keys` | `key_hash`, `age`, `gender`, `created_at` | 원래 키는 저장하지 않고 SHA-256 해시만 |
+| `stories` | `cid`, `wrapped_key`, `emotions`, `keywords`, `input_type`, `publish_consent`, `pen_name` | 본문은 IPFS에 암호문으로만 존재 |
+| `issues` | `issue_number`, `title`, `theme`, `editor_note`, `is_published`, `published_at` | 매거진 호 |
+| `articles` | `issue_id`, `type`, `title`, `content`, `author_name`, `display_order`, `views`, `highlight_quote` | 조회수는 `increment_article_views()` 함수로 원자적 증가 |
 
-### Story (사용자 제출 스토리)
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| `id` | string | 고유 ID |
-| `cid` | string | IPFS CID |
-| `ipfsUrl` | string | 공개 게이트웨이 URL |
-| `iv` | string | AES-GCM IV (hex) |
-| `tag` | string | AES-GCM 인증 태그 (hex) |
-| `emotions` | `Record<string, number>` | 감정 분석 결과 (%) |
-| `keywords` | `string[]` | 핵심 키워드 |
-| `inputType` | `'voice' \| 'text'` | 입력 방식 |
-| `preview` | string | 익명화된 텍스트 앞 60자 |
-| `createdAt` | string | 제출 일시 |
+- 임팩트 통계(총 스토리 수, 감정 분포, 참여 학생 수)는 별도 저장 없이 테이블에서 집계
+- 임팩트 섹션의 "학생들의 목소리"는 발행된 기사의 `highlight_quote`(관리자가 `/admin/content`에서 본문 문장을 골라 지정, 본문에 없는 문장은 DB가 거부)
 
 ---
 
@@ -132,23 +105,20 @@ DB 텍스트(한국어) → AITranslatedText → /api/ai/translate → 영어로
 
 **파일**: `src/components/StorySubmit.tsx`
 
-사용자 입력부터 IPFS 저장까지 3단계 파이프라인.
+사용자 입력부터 IPFS 저장까지 서버의 한 요청(`/api/stories/submit`) 안에서 처리. 요청에는 `X-Access-Key` 헤더(발급받은 접속 키)가 필요.
 
 ```
-[사용자 입력] (음성 or 텍스트)
+[사용자 입력] (음성 or 텍스트) + 매거진 게재 동의 / 필명 (선택)
        ↓
-[1단계] /api/ai/anonymize
-  - Gemini AI가 이름, 지역, 날짜 등 개인정보를 제거
-  - 익명화된 텍스트 반환
+[1] 접속 키 검증
+[2] AI 익명화 (src/lib/anonymize.ts)
+  - 이름·지명·날짜·소속을 [이름] [장소] [때] [소속]으로 치환, 연락처 삭제
+  - 실패하면 저장하지 않고 중단 (원문이 저장되는 경로 차단)
+[3] 감정 분석 — 4대 감정 비율 + 키워드 5개
+[4] 봉투 암호화 → IPFS 업로드 (암호문만)
+[5] DB 저장 — CID, 잠긴 데이터 키, 감정, 키워드, 게재 동의, 필명
        ↓
-[2단계] /api/stories/submit
-  - AES-256-GCM으로 암호화 (story-crypto.ts)
-  - 암호화된 페이로드를 Pinata를 통해 IPFS에 업로드
-  - IV, tag, CID, 감정분석 데이터, 미리보기를 db.json에 저장
-       ↓
-[3단계] 완료
-  - IPFS CID + 공개 URL 반환
-  - 사용자에게 CID 표시
+[완료] CID + 게이트웨이 URL 반환
 ```
 
 **음성 입력 처리**:
@@ -164,14 +134,14 @@ DB 텍스트(한국어) → AITranslatedText → /api/ai/translate → 영어로
 **파일**: `src/lib/story-crypto.ts`
 
 ```
-암호화: AES-256-GCM
-  - 키: STORY_ENCRYPTION_KEY (환경변수, 32바이트 hex)
-  - IV: 12바이트 랜덤 생성 (매 암호화마다 새로 생성)
-  - 결과: { iv, tag, data } 구조체
+봉투 암호화 (AES-256-GCM)
+  - 스토리마다 새 32바이트 데이터 키 생성 → 본문 암호화 → IPFS 업로드 ({ v: 2, iv, tag, data })
+  - 데이터 키는 마스터키(STORY_ENCRYPTION_KEY)로 암호화해 DB stories.wrapped_key 에만 저장
+  - 원문을 보려면 마스터키(환경변수)와 잠긴 데이터 키(DB)가 모두 필요
 
 복호화: (관리자 전용)
-  - IV + tag + 암호화된 data → 원문 텍스트
-  - /api/admin/stories/[id]/decrypt 엔드포인트에서만 수행
+  - /api/admin/stories/[id]/decrypt 에서 wrapped_key 해제 → IPFS 암호문 복호화
+  - DB 행을 지우면 IPFS 암호문은 영구히 복호화 불가 (삭제 요청 대응)
 ```
 
 원문은 절대 DB에 평문으로 저장되지 않습니다. IPFS에도 암호화된 상태로만 저장됩니다.
@@ -184,8 +154,8 @@ DB 텍스트(한국어) → AITranslatedText → /api/ai/translate → 영어로
 
 ```
 Pinata SDK → IPFS 퍼블릭 네트워크 업로드
-  - uploadJSONToIPFS(data) → CID 반환
-  - getIPFSUrl(cid) → 공개 게이트웨이 URL 반환
+  - pinata.upload.public.file(file) → CID 반환
+  - pinata.gateways.public.convert(cid) → 공개 게이트웨이 URL 반환
 환경변수: PINATA_JWT, PINATA_GATEWAY
 ```
 
@@ -202,17 +172,13 @@ Pinata SDK → IPFS 퍼블릭 네트워크 업로드
 
 ---
 
-### 6. 파일 기반 데이터베이스
+### 6. 데이터베이스 (Supabase)
 
-**파일**: `src/lib/db.ts`
+**파일**: `src/lib/supabase.ts`, `src/lib/repository.ts`
 
-```typescript
-readDB()  // data/db.json을 읽어 파싱
-writeDB() // DB 전체를 JSON으로 직렬화하여 저장
-generateId() // timestamp36 + random5 조합의 고유 ID 생성
-```
-
-> ⚠️ **주의**: 서버리스(Vercel) 환경에서는 파일 쓰기가 불가합니다. 로컬 개발 또는 단일 서버 배포 전용입니다.
+- 서버 전용 클라이언트(`server-only`)가 service_role 키로 `storytech` 스키마에 접근
+- 라우트는 `repository.ts` 함수만 호출하고, DB 행(snake_case) ↔ 앱 타입(camelCase) 변환은 repository에서 처리
+- 초기 설정: `schema.sql`을 SQL Editor에서 실행 → Project Settings → Data API → Exposed schemas에 `storytech` 추가
 
 ---
 
@@ -383,8 +349,8 @@ Writing Lab 진입부터 스토리 제출까지:
    - 진입 시 `localStorage.access_key` 확인 (없으면 결제 모달 표시)
    - 보안 강화를 위해 화면 상에 키가 기본적으로 Маsking 처리(`ST-••••••`) 되며, 클릭을 통해 전체 복사/열람 가능
 2. **AI 글쓰기 코치 (`AILab`)** — 글쓰기 품질 점수, 문법/어휘/흐름/유창성 분석, 개선 제안 및 AI 교정문 제공
-3. **익명 스토리 제출 (`StorySubmit`)** — 음성/텍스트 입력 기반. 상태 충돌 방지를 위해 각 입력 탭(음성/텍스트)은 격리되어 동작하며, 최종 제출 시 즉시 익명화 후 IPFS에 저장됨
-4. **스토리 아카이브 (`StoryArchive`)** — 공개 스토리 목록 (익명화된 미리보기)
+3. **익명 스토리 제출 (`StorySubmit`)** — 음성/텍스트 입력 기반. 상태 충돌 방지를 위해 각 입력 탭(음성/텍스트)은 격리되어 동작하며, 최종 제출 시 서버에서 익명화 후 IPFS에 저장됨. 매거진 게재 동의와 필명(선택)을 함께 제출
+   - 개별 스토리는 공개되지 않으며, 게재에 동의한 스토리만 관리자가 `/admin/stories`에서 "기사로 옮기기"로 매거진 기사화
 
 #### AILab (`/api/ai/expand`) 제공 항목
 
@@ -414,11 +380,14 @@ Writing Lab 진입부터 스토리 제출까지:
 
 | 변수명 | 설명 |
 |--------|------|
-| `ADMIN_PASSWORD` | 어드민 로그인 비밀번호 |
-| `STORY_ENCRYPTION_KEY` | AES-256 암호화 키 (32바이트 hex, 64자) |
-| `PINATA_JWT` | Pinata API JWT 토큰 |
-| `PINATA_GATEWAY` | Pinata 커스텀 게이트웨이 도메인 |
-| `GEMINI_API_KEY` | Google Gemini AI API 키 |
+| `OPENAI_API_KEY` / `OPENAI_MODEL` | OpenAI API 키 / 모델 이름 |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | 어드민 로그인 계정 |
+| `AUTH_SECRET` | 어드민 토큰 서명용 비밀값 |
+| `STORY_ENCRYPTION_KEY` | 스토리 데이터 키를 잠그는 AES-256 마스터키 (32바이트 hex, 64자) |
+| `PINATA_JWT` / `PINATA_GATEWAY` | Pinata API JWT / 게이트웨이 도메인 |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Supabase 프로젝트 URL / 서버 전용 secret 키 |
+
+발급 방법은 `.env.example`의 주석 참고. 배포(Amplify)에서는 같은 이름으로 환경 변수를 등록하면 `amplify.yml`이 빌드 시 주입.
 
 ---
 
@@ -429,8 +398,8 @@ Writing Lab 진입부터 스토리 제출까지:
 | 프레임워크 | Next.js 15 (App Router) |
 | 언어 | TypeScript |
 | 스타일 | Tailwind CSS |
-| AI | Google Gemini API |
-| 저장소 | 파일 기반 JSON DB (`data/db.json`) |
+| AI | OpenAI API (gpt-4o-mini) |
+| 저장소 | Supabase (PostgreSQL, `storytech` 스키마) |
 | 분산 저장 | IPFS (Pinata SDK) |
 | 암호화 | Node.js `crypto` — AES-256-GCM |
 | 차트 | Recharts |

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useI18n } from '@/lib/i18n'
 import AITranslatedText from './AITranslatedText'
+import type { ImpactStats, Voice } from '@/lib/db'
 import { Users, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   BarChart,
@@ -14,13 +15,6 @@ import {
   Cell,
 } from 'recharts'
 
-interface Stats {
-  totalStudents: number
-  totalStories: number
-  emotionData: Record<string, number>
-  testimonials: Array<{ quote: string; author: string }>
-}
-
 const EMOTION_COLORS: Record<string, string> = {
   sadness: '#6366f1', // Indigo
   anger: '#ef4444',   // Red
@@ -28,7 +22,7 @@ const EMOTION_COLORS: Record<string, string> = {
   hope: '#10b981',    // Emerald
 }
 
-const DUMMY_STATS: Stats = {
+const DUMMY_STATS: ImpactStats = {
   totalStudents: 24,
   totalStories: 47,
   emotionData: {
@@ -37,12 +31,12 @@ const DUMMY_STATS: Stats = {
     responsibility: 20,
     hope: 30
   },
-  testimonials: []
 }
 
 export default function Impact() {
   const { t } = useI18n()
-  const [stats, setStats] = useState<Stats | null>(null)
+  const [stats, setStats] = useState<ImpactStats | null>(null)
+  const [voices, setVoices] = useState<Voice[]>([])
   const [testimonialIdx, setTestimonialIdx] = useState(0)
 
   // 데이터가 없거나 모든 값이 0이면 더미 데이터 사용
@@ -55,15 +49,17 @@ export default function Impact() {
     fill: EMOTION_COLORS[key as keyof typeof EMOTION_COLORS] ?? '#94a3b8',
   }))
 
-  const testimonials = currentStats!.testimonials
-  const prev = () => setTestimonialIdx((i) => (i - 1 + testimonials.length) % testimonials.length)
-  const next = () => setTestimonialIdx((i) => (i + 1) % testimonials.length)
+  const prev = () => setTestimonialIdx((i) => (i - 1 + voices.length) % voices.length)
+  const next = () => setTestimonialIdx((i) => (i + 1) % voices.length)
 
   useEffect(() => {
     fetch('/api/stats')
       .then((r) => r.json())
       .then((json) => {
-        if (json.success) setStats(json.data)
+        if (!json.success) return
+        const { voices: loadedVoices, ...impactStats } = json.data
+        setStats(impactStats)
+        setVoices(loadedVoices)
       })
   }, [])
 
@@ -87,17 +83,17 @@ export default function Impact() {
         </div>
 
         {/* Testimonials */}
-        {testimonials.length > 0 && (
+        {voices.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold mb-8 text-center">{t.impact.voices}</h3>
             <div className="relative max-w-2xl mx-auto">
               <div className="bg-slate-800 rounded-2xl p-10 text-center min-h-[160px] flex flex-col items-center justify-center">
                 <AITranslatedText 
-                  text={testimonials[testimonialIdx].quote} 
+                  text={voices[testimonialIdx].quote} 
                   className="text-xl text-slate-200 leading-relaxed mb-6 italic" 
                 />
                 <p className="text-slate-400 text-sm font-medium">
-                  — {testimonials[testimonialIdx].author}
+                  — {voices[testimonialIdx].author}
                 </p>
               </div>
 
@@ -109,7 +105,7 @@ export default function Impact() {
                   <ChevronLeft size={18} />
                 </button>
                 <div className="flex gap-2">
-                  {testimonials.map((_, i) => (
+                  {voices.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setTestimonialIdx(i)}

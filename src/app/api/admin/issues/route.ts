@@ -1,4 +1,4 @@
-import { getAllIssuesAdmin, createIssue } from '@/lib/mockData'
+import { getAllIssuesAdmin, createIssue } from '@/lib/repository'
 import { isAuthenticated } from '@/lib/auth'
 
 export async function GET(request: Request) {
@@ -8,8 +8,8 @@ export async function GET(request: Request) {
   try {
     const issues = await getAllIssuesAdmin()
     return Response.json({ success: true, data: { issues } })
-  } catch (error: any) {
-    return Response.json({ success: false, error: error.message }, { status: 500 })
+  } catch (error) {
+    return Response.json({ success: false, error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const data = await request.json()
     const newIssue = await createIssue(data)
     return Response.json({ success: true, data: newIssue }, { status: 201 })
-  } catch (error: any) {
-    return Response.json({ success: false, error: error.message }, { status: 500 })
+  } catch (error) {
+    return Response.json({ success: false, error: (error as Error).message }, { status: 500 })
   }
 }

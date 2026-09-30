@@ -1,4 +1,4 @@
-import { getLatestPublishedIssue } from '@/lib/mockData'
+import { getLatestPublishedIssue } from '@/lib/repository'
 
 export async function GET() {
   const latest = await getLatestPublishedIssue()
