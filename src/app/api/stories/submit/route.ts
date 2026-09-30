@@ -1,7 +1,9 @@
+import crypto from 'crypto'
 import OpenAI from 'openai'
 import { encryptStory } from '@/lib/story-crypto'
+import { anonymizeText } from '@/lib/anonymize'
 import { pinata } from '@/lib/pinata'
-import { readDB, writeDB, generateId } from '@/lib/db'
+import { createStory, isValidAccessKey } from '@/lib/repository'
 import type { InputType } from '@/lib/db'
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -51,62 +53,67 @@ async function analyzeStory(text: string) {
   }
 }
 
+const INPUT_TYPES: InputType[] = ['voice', 'text']
+const PEN_NAME_MAX = 30
+
 export async function POST(request: Request) {
-  const { text, inputType = 'text' } = (await request.json()) as {
-    text: string
-    inputType?: InputType
+  const accessKey = request.headers.get('X-Access-Key')
+  if (!accessKey || !(await isValidAccessKey(accessKey))) {
+    return Response.json({ error: '유효한 접속 키가 필요합니다.' }, { status: 401 })
   }
 
-  if (!text || text.trim().length < 10) {
+  const { text, inputType, publishConsent, penName } = await request.json()
+
+  if (typeof text !== 'string' || text.trim().length < 10) {
     return Response.json({ error: '내용이 너무 짧습니다.' }, { status: 400 })
   }
-
-  // 1. Encrypt
-  const payload = encryptStory(text)
-
-  // 2. Upload encrypted blob to IPFS
-  const ipfsContent = JSON.stringify({
-    v: 1,
-    iv: payload.iv,
-    tag: payload.tag,
-    data: payload.data,
-  })
-
-  const blob = new Blob([ipfsContent], { type: 'application/json' })
-  const file = new File([blob], `story-${generateId()}.json`, { type: 'application/json' })
-
-  const uploadResult = await pinata.upload.public.file(file)
-  const cid = uploadResult.cid
-  const ipfsUrl = await pinata.gateways.public.convert(cid)
-
-  // 3. AI analysis (Hierarchical 4 categories)
-  const analysis = await analyzeStory(text)
-
-  // 4. Store in db
-  const db = readDB()
-  const story = {
-    id: `story-${generateId()}`,
-    cid,
-    ipfsUrl,
-    iv: payload.iv,
-    tag: payload.tag,
-    emotions: analysis.emotions ?? {},
-    keywords: analysis.keywords ?? [],
-    inputType: inputType as InputType,
-    preview: text.slice(0, 60) + (text.length > 60 ? '...' : ''),
-    createdAt: new Date().toISOString(),
+  if (!INPUT_TYPES.includes(inputType)) {
+    return Response.json({ error: '잘못된 입력 방식입니다.' }, { status: 400 })
   }
 
-  db.stories.push(story)
-  
-  // 5. Update Aggregate Stats for Impact section
-  db.stats.totalStories += 1
-  // 감정 데이터 누적 업데이트 (평균 계산을 위해 단순히 더함, UI에서 비율 표시)
-  Object.keys(analysis.emotions).forEach(key => {
-    db.stats.emotionData[key] = (db.stats.emotionData[key] || 0) + analysis.emotions[key]
-  })
+  // 필명은 게재에 동의한 경우에만 저장
+  const consent = publishConsent === true
+  const trimmedPenName = consent && typeof penName === 'string' ? penName.trim() : ''
+  if (trimmedPenName.length > PEN_NAME_MAX) {
+    return Response.json({ error: `필명은 ${PEN_NAME_MAX}자 이하로 입력해주세요.` }, { status: 400 })
+  }
 
-  writeDB(db)
+  // 1. Anonymize (필수 단계 — 실패 시 저장하지 않음)
+  let anonymizedText: string
+  try {
+    anonymizedText = await anonymizeText(text.trim())
+  } catch (error) {
+    console.error('Anonymization failed:', error)
+    return Response.json({ error: '익명화에 실패하여 저장하지 않았습니다.' }, { status: 502 })
+  }
 
-  return Response.json({ success: true, cid, ipfsUrl, id: story.id })
+  try {
+    // 2. AI analysis (Hierarchical 4 categories)
+    const analysis = await analyzeStory(anonymizedText)
+
+    // 3. Encrypt with a per-story data key, then upload the ciphertext to IPFS
+    const { payload, wrappedKey } = encryptStory(anonymizedText)
+    const file = new File(
+      [JSON.stringify({ v: 2, ...payload })],
+      `story-${crypto.randomUUID()}.json`,
+      { type: 'application/json' }
+    )
+    const { cid } = await pinata.upload.public.file(file)
+
+    // 4. Store metadata + wrapped key (DB 저장 실패 시 IPFS 암호문은 키가 없어 영구히 복호화 불가)
+    const id = await createStory({
+      cid,
+      wrappedKey,
+      emotions: analysis.emotions,
+      keywords: analysis.keywords,
+      inputType,
+      publishConsent: consent,
+      penName: trimmedPenName || null,
+    })
+
+    return Response.json({ success: true, id, cid, ipfsUrl: await pinata.gateways.public.convert(cid) })
+  } catch (error) {
+    console.error('Story submit failed:', error)
+    return Response.json({ error: '저장 중 오류가 발생했습니다.' }, { status: 500 })
+  }
 }

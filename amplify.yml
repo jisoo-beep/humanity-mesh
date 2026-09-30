@@ -12,6 +12,8 @@ frontend:
         - echo "PINATA_JWT=$PINATA_JWT" >> .env.production
         - echo "PINATA_GATEWAY=$PINATA_GATEWAY" >> .env.production
         - echo "STORY_ENCRYPTION_KEY=$STORY_ENCRYPTION_KEY" >> .env.production
+        - echo "SUPABASE_URL=$SUPABASE_URL" >> .env.production
+        - echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env.production
     build:
       commands:
         - npm run build

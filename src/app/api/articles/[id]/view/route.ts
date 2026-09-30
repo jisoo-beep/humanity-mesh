@@ -1,16 +1,18 @@
-import { readDB, writeDB } from '@/lib/db'
+import { incrementArticleViews } from '@/lib/repository'
 
 export async function PATCH(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const db = readDB()
-  const article = db.articles.find((a) => a.id === id)
-  if (!article) {
-    return Response.json({ success: false }, { status: 404 })
+  try {
+    const views = await incrementArticleViews(id)
+    if (views === null) {
+      return Response.json({ success: false }, { status: 404 })
+    }
+    return Response.json({ success: true, views })
+  } catch (error) {
+    console.error('View count update failed:', error)
+    return Response.json({ success: false }, { status: 500 })
   }
-  article.views = (article.views ?? 0) + 1
-  writeDB(db)
-  return Response.json({ success: true, views: article.views })
 }

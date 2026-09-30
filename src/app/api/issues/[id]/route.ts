@@ -1,11 +1,11 @@
-import { getIssueById } from '@/lib/mockData'
+import { getPublishedIssueById } from '@/lib/repository'
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const issue = await getIssueById(id)
+  const issue = await getPublishedIssueById(id)
 
   if (!issue) {
     return Response.json({ success: false, error: 'Issue not found' }, { status: 404 })

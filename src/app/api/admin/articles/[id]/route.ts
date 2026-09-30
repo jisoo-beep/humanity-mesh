@@ -1,4 +1,4 @@
-import { updateArticle, deleteArticle } from '@/lib/mockData'
+import { updateArticle, deleteArticle, ArticleValidationError } from '@/lib/repository'
 import { isAuthenticated } from '@/lib/auth'
 
 export async function PUT(
@@ -13,8 +13,9 @@ export async function PUT(
     const data = await request.json()
     const updated = await updateArticle(id, data)
     return Response.json({ success: true, data: updated })
-  } catch (err: any) {
-    return Response.json({ success: false, error: err.message }, { status: 404 })
+  } catch (err) {
+    const status = err instanceof ArticleValidationError ? 400 : 404
+    return Response.json({ success: false, error: (err as Error).message }, { status })
   }
 }
 
@@ -27,9 +28,9 @@ export async function DELETE(
   }
   const { id } = await params
   try {
-    const result = await deleteArticle(id)
-    return Response.json({ success: true, data: result })
-  } catch (err: any) {
-    return Response.json({ success: false, error: err.message }, { status: 404 })
+    await deleteArticle(id)
+    return Response.json({ success: true })
+  } catch (err) {
+    return Response.json({ success: false, error: (err as Error).message }, { status: 404 })
   }
 }

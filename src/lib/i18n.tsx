@@ -20,7 +20,7 @@ const ko = {
     title: '우리는 누구인가',
     missionLabel: '미션',
     mission:
-      '탈북 청소년들이 자신의 이야기를 안전하게 공유하며, AI 기반 감정 분석과 익명화 도구로 목소리를 보호합니다. 모든 이야기는 IPFS에 암호화되어 보존되며, 관리자 복호화 후에도 AI가 민감 정보를 실시간으로 감지하고 가공하여 개인정보를 철저히 보호하는 안전한 공간을 만듭니다.',
+      '탈북 청소년들이 자신의 이야기를 안전하게 공유하며, AI 기반 감정 분석과 익명화 도구로 목소리를 보호합니다. 모든 이야기는 저장 전에 AI가 이름·지명 등 민감 정보를 가린 뒤 암호화되어 IPFS에 보존되므로, 관리자조차 작성자를 알 수 없는 안전한 공간을 만듭니다.',
     visionLabel: '비전',
     vision:
       '모든 청소년이 자신의 언어로 세상에 말을 걸 수 있는 세상. 스토리텔링이 정체성 형성과 사회 통합의 도구가 되는 미래.',
@@ -28,10 +28,10 @@ const ko = {
     bg: '탈북 청소년들은 새로운 언어, 문화, 교육 체계에 적응하면서 리터러시 격차를 경험합니다. 이 프로젝트는 그 격차를 메우고, 청소년들의 목소리가 사회에 울려 퍼질 수 있도록 지원합니다.',
     securityTitle: '데이터 보호 및 보안 로직 (Privacy Architecture)',
     securitySteps: {
-      step1: { title: 'AI 기반 1차 익명화 및 감정 분석', desc: '입력 즉시 AI가 인명, 지명 등 식별 정보를 감지하여 변환하며, 텍스트 속에 담긴 심리적 상태와 감정을 분석하여 데이터화합니다.' },
+      step1: { title: 'AI 기반 익명화 및 감정 분석', desc: '입력 즉시 AI가 인명, 지명 등 식별 정보를 감지하여 변환하며, 텍스트 속에 담긴 심리적 상태와 감정을 분석하여 데이터화합니다.' },
       step2: { title: 'IPFS 분산 암호화', desc: '익명화된 데이터는 AES-256으로 암호화되어 분산형 저장소인 IPFS에 기록되며, 임의의 위변조나 삭제가 불가능합니다.' },
-      step3: { title: '관리자 전용 복호화', desc: '인가된 관리자만이 개인별 할당된 고유 키를 통해 암호화된 데이터를 안전하게 복호화하여 관리 도구 내에서 검토할 수 있습니다.' },
-      step4: { title: 'AI 실시간 동적 가공', desc: '복호화된 데이터 열람 시에도 AI가 실시간으로 작동하여, 이름과 구체적 지역 등 민감 정보를 다시 한번 필터링하여 노출을 최소화합니다.' },
+      step3: { title: '관리자 전용 복호화', desc: '인증된 관리자만 관리 도구 안에서 암호화된 데이터를 복호화하여 검토할 수 있으며, 열람되는 내용도 이미 익명화된 글입니다.' },
+      step4: { title: '통계로만 공개', desc: '개별 이야기는 외부에 공개되지 않으며, 감정 분석 결과만 합산된 통계로 사이트에 반영됩니다.' },
     }
   },
   magazine: {
@@ -108,7 +108,7 @@ const ko = {
   submit: {
     badge: '익명 스토리 제출',
     title: '당신의 이야기를 남기세요',
-    desc: '입력된 내용은 즉시 익명화되어 안전하게 보호됩니다. AI가 인명, 지명 등 민감정보를 일반화된 용어로 변환하며, 관리자 복호화 시에도 AI가 실시간으로 재가공하여 노출을 최소화합니다.',
+    desc: '입력된 내용은 즉시 익명화되어 안전하게 보호됩니다. AI가 인명, 지명 등 민감정보를 일반화된 용어로 변환하며, 익명화된 내용만 암호화되어 저장되므로 원문은 어디에도 남지 않습니다.',
     descDetail: '음성은 텍스트로 변환되어 원본은 자동 파기되며, 익명화된 텍스트는 IPFS에 AES-256 규격으로 암호화되어 영구 보존됩니다.',
     privacyNotice: '귀하의 데이터는 AI 익명화와 IPFS 분산 암호화를 통해 3중으로 보호됩니다. 관리자조차 당신이 누구인지 알 수 없으므로 안심하고 이야기를 들려주세요.',
     modeVoice: '음성 입력',
@@ -141,20 +141,10 @@ const ko = {
     privacyMed: '매우 안전',
     privacyHigh: '철저 보호',
     privacyHint: 'AI가 감정은 보존하고 민감 정보(이름, 장소 등)를 자동으로 대체합니다.',
-  },
-  archive: {
-    badge: '익명 아카이브',
-    title: '스토리 아카이브',
-    desc: '모든 스토리는 익명화되어 IPFS에 영구 보존됩니다',
-    count: '개의 스토리',
-    loading: '불러오는 중...',
-    empty: '아직 등록된 스토리가 없습니다.',
-    emptyHint: '위 섹션에서 첫 번째 이야기를 남겨주세요.',
-    emotionChart: '전체 스토리 감정 분포',
-    keywords: '주요 키워드',
-    voice: '음성',
-    text: '텍스트',
-    ipfsView: 'IPFS에서 확인',
+    consentLabel: '이 이야기를 매거진에 싣는 데 동의합니다 (선택)',
+    consentHint: '동의한 이야기만 편집자가 검토해 매거진에 실을 수 있어요.',
+    penNamePlaceholder: '매거진에 표시될 필명 (비워두면 익명)',
+    penNameWarning: '실명이나 나이처럼 나를 알아볼 수 있는 정보는 쓰지 마세요.',
   },
   adminShell: {
     title: '관리자 대시보드',
@@ -204,7 +194,20 @@ const ko = {
     filterAll: '전체 보기',
     filterVoice: '음성',
     filterText: '텍스트',
-    searchPlaceholder: '스토리 내용 검색...',
+    searchPlaceholder: '키워드·필명 검색...',
+    filterConsented: '게재 동의',
+    consentBadge: '게재 동의',
+    anonymous: '익명',
+    toArticleBtn: '기사로 옮기기',
+    toArticleTitle: '매거진 기사로 옮기기',
+    selectIssue: '게재할 호',
+    articleType: '기사 유형',
+    articleTitle: '기사 제목',
+    articleAuthor: '작성자 (학생이 정한 필명)',
+    articleBody: '본문 (필요하면 다듬어 주세요)',
+    saveArticle: '기사로 저장',
+    articleSaved: '기사로 저장했습니다. 매거진 관리에서 확인하세요.',
+    articleSaveFailed: '기사 저장 실패: ',
   },
   adminUsers: {
     title: '사용자 관리',
@@ -264,7 +267,7 @@ const ko = {
     typeInfo: '타입',
     displayOrder: '표시 순서',
     authorLabel: '작성자명 (익명 사용 가능)',
-    authorPlaceholder: '예: 별빛 (17세)',
+    authorPlaceholder: '예: 별빛',
     contentBody: '내용',
     save: '저장',
     published: '발행됨',
@@ -272,6 +275,11 @@ const ko = {
     publishBtn: '발행',
     articleBtn: '아티클',
     noArticles: '아티클이 없습니다.',
+    voiceBtn: '학생들의 목소리로 인용',
+    voiceBadge: '목소리',
+    voiceLabel: '임팩트 섹션 "학생들의 목소리"에 표시할 문장',
+    voiceHint: '이 기사 본문에 있는 문장을 그대로 붙여넣어 주세요. 발행된 호의 기사만 표시됩니다.',
+    voiceRemove: '인용 해제',
     types: {
       interview: '인터뷰',
       story: '스토리',
@@ -284,7 +292,9 @@ const ko = {
       articleUpdated: '수정됐습니다.',
       articleAdded: '아티클이 추가됐습니다.',
       confirmDelete: '아티클을 삭제할까요?',
-      deletedSuccess: '삭제됐습니다.'
+      deletedSuccess: '삭제됐습니다.',
+      voiceSaved: '학생들의 목소리에 등록됐습니다.',
+      voiceRemoved: '학생들의 목소리에서 내렸습니다.'
     }
   },
 }
@@ -305,7 +315,7 @@ const en: typeof ko = {
     title: 'Who We Are',
     missionLabel: 'Mission',
     mission:
-      'We create a safe space where North Korean defector youth share their stories, protected by AI-powered emotion analysis and anonymization. All stories are encrypted and preserved on IPFS; even after decryption by an admin, AI continues to detect and mask sensitive information such as names and locations in real-time, ensuring robust privacy protection.',
+      'We create a safe space where North Korean defector youth share their stories, protected by AI-powered emotion analysis and anonymization. Before storage, AI masks sensitive information such as names and locations, and every story is then encrypted and preserved on IPFS, so not even admins can identify the author.',
     visionLabel: 'Vision',
     vision:
       'A world where every young person can speak to the world in their own language. A future where storytelling becomes a tool for identity formation and social integration.',
@@ -315,8 +325,8 @@ const en: typeof ko = {
     securitySteps: {
       step1: { title: 'AI Anonymization & Emotion Analysis', desc: 'AI immediately detects PII to transform them, while simultaneously analyzing psychological states and emotions embedded in the text.' },
       step2: { title: 'IPFS Distributed Encryption', desc: 'Anonymized data is AES-256 encrypted and recorded on IPFS, ensuring permanent, tamper-proof, and decentralized storage.' },
-      step3: { title: 'Authorized Decryption', desc: 'Only authorized administrators with unique keys can securely decrypt and review the data within the protected dashboard.' },
-      step4: { title: 'Real-time AI Processing', desc: 'Even during decryption, AI continues to monitor and mask sensitive info in real-time to minimize exposure of private details.' },
+      step3: { title: 'Authorized Decryption', desc: 'Only authenticated administrators can decrypt and review the data within the protected dashboard, and what they see is already anonymized.' },
+      step4: { title: 'Aggregate-only Disclosure', desc: 'Individual stories are never published; only aggregated emotion analysis results are reflected on the site.' },
     }
   },
   magazine: {
@@ -393,7 +403,7 @@ const en: typeof ko = {
   submit: {
     badge: 'Anonymous Story Submission',
     title: 'Share Your Story',
-    desc: 'Your input is immediately anonymized. AI transforms sensitive data (names, locations) into generalized terms, and even during admin decryption, AI re-processes information in real-time to minimize exposure.',
+    desc: 'Your input is immediately anonymized. AI transforms sensitive data (names, locations) into generalized terms, and only the anonymized text is encrypted and stored, so the original is never kept anywhere.',
     descDetail: 'Voices are transcribed and originals are destroyed. Anonymized text is AES-256 encrypted and permanently preserved on distributed IPFS.',
     privacyNotice: 'Your data is triple-protected via AI Anonymization and IPFS Encryption. No one, including admins, can identify you, so please feel free to share your story.',
     modeVoice: 'Voice Input',
@@ -426,20 +436,10 @@ const en: typeof ko = {
     privacyMed: 'Very Secure',
     privacyHigh: 'Top Secret',
     privacyHint: 'AI preserves emotions while automatically replacing sensitive info (names, locations).',
-  },
-  archive: {
-    badge: 'Anonymous Archive',
-    title: 'Story Archive',
-    desc: 'All stories are anonymized and permanently preserved on IPFS',
-    count: ' stories',
-    loading: 'Loading...',
-    empty: 'No stories submitted yet.',
-    emptyHint: 'Be the first to share your story above.',
-    emotionChart: 'Aggregate Emotion Distribution',
-    keywords: 'Key Topics',
-    voice: 'Voice',
-    text: 'Text',
-    ipfsView: 'View on IPFS',
+    consentLabel: 'I agree to have this story published in the magazine (optional)',
+    consentHint: 'Only consented stories can be reviewed by editors for the magazine.',
+    penNamePlaceholder: 'Pen name shown in the magazine (blank = Anonymous)',
+    penNameWarning: 'Do not use your real name, age, or anything that could identify you.',
   },
   adminShell: {
     title: 'Admin Dashboard',
@@ -489,7 +489,20 @@ const en: typeof ko = {
     filterAll: 'All Categories',
     filterVoice: 'Voice',
     filterText: 'Text',
-    searchPlaceholder: 'Search stories...',
+    searchPlaceholder: 'Search keywords or pen names...',
+    filterConsented: 'Consented',
+    consentBadge: 'Publish consent',
+    anonymous: 'Anonymous',
+    toArticleBtn: 'Move to article',
+    toArticleTitle: 'Move to magazine article',
+    selectIssue: 'Issue',
+    articleType: 'Article type',
+    articleTitle: 'Article title',
+    articleAuthor: "Author (student's pen name)",
+    articleBody: 'Body (edit if needed)',
+    saveArticle: 'Save as article',
+    articleSaved: 'Saved as an article. Check it in Content management.',
+    articleSaveFailed: 'Failed to save article: ',
   },
   adminUsers: {
     title: 'User Management',
@@ -549,7 +562,7 @@ const en: typeof ko = {
     typeInfo: 'Type',
     displayOrder: 'Display Order',
     authorLabel: 'Author (Anonymous allowed)',
-    authorPlaceholder: 'ex: Starlight (Age 17)',
+    authorPlaceholder: 'ex: Starlight',
     contentBody: 'Content',
     save: 'Save',
     published: 'Published',
@@ -557,6 +570,11 @@ const en: typeof ko = {
     publishBtn: 'Publish',
     articleBtn: 'Article',
     noArticles: 'No articles available.',
+    voiceBtn: 'Quote as Student Voice',
+    voiceBadge: 'Voice',
+    voiceLabel: 'Sentence to show in "Student Voices" on the Impact section',
+    voiceHint: 'Paste a sentence exactly as it appears in this article. Only articles in published issues are shown.',
+    voiceRemove: 'Remove quote',
     types: {
       interview: 'Interview',
       story: 'Story',
@@ -569,7 +587,9 @@ const en: typeof ko = {
       articleUpdated: 'Updated successfully.',
       articleAdded: 'Article added successfully.',
       confirmDelete: 'Delete this article?',
-      deletedSuccess: 'Deleted successfully.'
+      deletedSuccess: 'Deleted successfully.',
+      voiceSaved: 'Added to Student Voices.',
+      voiceRemoved: 'Removed from Student Voices.'
     }
   },
 }
