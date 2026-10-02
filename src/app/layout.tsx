@@ -7,7 +7,7 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'StoryTech Humanity Lab',
+  title: 'Humanity Mesh',
   description: 'AI 기반 스토리텔링을 통한 탈북 청소년 리터러시 향상 및 정체성 형성 지원',
 }
 

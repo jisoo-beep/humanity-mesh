@@ -1,4 +1,4 @@
-# PROJECT.md — StoryTech Humanity Lab
+# PROJECT.md — Humanity Mesh
 
 Anonymous storytelling platform for North Korean defector youth. Students record stories (voice/text); the server anonymizes, encrypts, and stores them on IPFS. Only aggregate emotion stats are public; consented stories can become magazine articles.
 

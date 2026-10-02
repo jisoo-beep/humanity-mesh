@@ -51,7 +51,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       {/* Sidebar */}
       <aside className="w-56 bg-slate-900 text-slate-300 flex flex-col">
         <div className="p-6 border-b border-slate-700">
-          <p className="text-white font-semibold text-sm">StoryTech</p>
+          <p className="text-white font-semibold text-sm">Humanity Mesh</p>
           <p className="text-slate-500 text-xs mt-0.5">{t.adminShell.title}</p>
         </div>
 

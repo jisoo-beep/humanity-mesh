@@ -121,7 +121,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                   {lang === 'ko' ? '이용권 구매' : 'Get Access'}
                 </div>
                 <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                  {lang === 'ko' ? '스토리텍 이용권' : 'StoryTech Access Pass'}
+                  {lang === 'ko' ? 'Humanity Mesh 이용권' : 'Humanity Mesh Access Pass'}
                 </h2>
                 <p className="text-slate-500 text-sm leading-relaxed">
                   {lang === 'ko'
