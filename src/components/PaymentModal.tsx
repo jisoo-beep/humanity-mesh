@@ -97,9 +97,6 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
       <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden">
-        
-        {/* 헤더 그라디언트 */}
-        <div className="h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
 
         {/* 닫기 버튼 */}
         {step !== 'processing' && (

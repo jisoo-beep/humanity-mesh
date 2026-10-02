@@ -54,10 +54,6 @@ export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
       <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden">
-        
-        {/* 헤더 그라디언트 */}
-        <div className="h-1.5 bg-gradient-to-r from-slate-600 via-slate-800 to-slate-900" />
-
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
