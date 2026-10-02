@@ -346,8 +346,11 @@ export default function StorySubmit() {
                 </span>
               </label>
               {publishConsent && (
-                <div>
+                <div className="pl-6">
+                  <label htmlFor="pen-name" className="block text-sm font-medium text-slate-700">{s.penNameLabel}</label>
+                  <p className="text-xs text-slate-400 mt-0.5 mb-2">{s.penNameHint}</p>
                   <input
+                    id="pen-name"
                     value={penName}
                     onChange={(e) => setPenName(e.target.value)}
                     disabled={isProcessing}
