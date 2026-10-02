@@ -143,7 +143,9 @@ const ko = {
     privacyHint: 'AI가 감정은 보존하고 민감 정보(이름, 장소 등)를 자동으로 대체합니다.',
     consentLabel: '이 이야기를 매거진에 싣는 데 동의합니다 (선택)',
     consentHint: '동의한 이야기는 편집자가 검토해 매거진에 싣고, 그중 한두 문장을 사이트의 "학생들의 목소리"에 인용할 수 있어요.',
-    penNamePlaceholder: '매거진에 표시될 필명 (비워두면 익명)',
+    penNameLabel: '필명 (선택)',
+    penNameHint: '매거진에 작성자 이름 대신 표시돼요. 비워두면 "익명"으로 표시돼요.',
+    penNamePlaceholder: '예: 별빛, 바람, 들꽃',
     penNameWarning: '실명이나 나이처럼 나를 알아볼 수 있는 정보는 쓰지 마세요.',
   },
   adminShell: {
@@ -442,7 +444,9 @@ const en: typeof ko = {
     privacyHint: 'AI preserves emotions while automatically replacing sensitive info (names, locations).',
     consentLabel: 'I agree to have this story published in the magazine (optional)',
     consentHint: 'Editors may publish consented stories in the magazine and quote a sentence or two in "Student Voices" on the site.',
-    penNamePlaceholder: 'Pen name shown in the magazine (blank = Anonymous)',
+    penNameLabel: 'Pen name (optional)',
+    penNameHint: 'Shown in the magazine instead of your name. Leave blank to appear as "Anonymous".',
+    penNamePlaceholder: 'e.g. Starlight, Breeze, Wildflower',
     penNameWarning: 'Do not use your real name, age, or anything that could identify you.',
   },
   adminShell: {
