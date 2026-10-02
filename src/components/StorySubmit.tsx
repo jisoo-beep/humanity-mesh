@@ -31,6 +31,7 @@ export default function StorySubmit() {
   const [resultUrl, setResultUrl] = useState('')
   const [error, setError] = useState('')
   const [publishConsent, setPublishConsent] = useState(false)
+  const [usePenName, setUsePenName] = useState(false)
   const [penName, setPenName] = useState('')
   const [speechSupported, setSpeechSupported] = useState(true)
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -158,7 +159,7 @@ export default function StorySubmit() {
           'Content-Type': 'application/json',
           'X-Access-Key': localStorage.getItem('access_key') ?? '',
         },
-        body: JSON.stringify({ text, inputType: mode, publishConsent, penName: publishConsent ? penName : '' }),
+        body: JSON.stringify({ text, inputType: mode, publishConsent, penName: publishConsent && usePenName ? penName : '' }),
       })
       const json = await submitRes.json()
       if (!submitRes.ok) throw new Error(json.error ?? 'Upload failed')
@@ -177,7 +178,7 @@ export default function StorySubmit() {
   const reset = () => {
     setTranscript(''); setInterim('')
     setPipelineStep('idle'); setResultCid(''); setResultUrl(''); setError('')
-    setPublishConsent(false); setPenName('')
+    setPublishConsent(false); setUsePenName(false); setPenName('')
     localStorage.removeItem('story_draft')
   }
 
@@ -346,19 +347,35 @@ export default function StorySubmit() {
                 </span>
               </label>
               {publishConsent && (
-                <div className="pl-6">
-                  <label htmlFor="pen-name" className="block text-sm font-medium text-slate-700">{s.penNameLabel}</label>
-                  <p className="text-xs text-slate-400 mt-0.5 mb-2">{s.penNameHint}</p>
-                  <input
-                    id="pen-name"
-                    value={penName}
-                    onChange={(e) => setPenName(e.target.value)}
-                    disabled={isProcessing}
-                    maxLength={30}
-                    placeholder={s.penNamePlaceholder}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                  />
-                  <p className="text-xs text-amber-600 mt-1.5">{s.penNameWarning}</p>
+                <div className="pl-6 space-y-2">
+                  <label className="flex items-start gap-2.5 text-sm text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={usePenName}
+                      onChange={(e) => setUsePenName(e.target.checked)}
+                      disabled={isProcessing}
+                      className="mt-0.5 accent-emerald-600"
+                    />
+                    <span>
+                      {s.penNameLabel}
+                      <span className="block text-xs text-slate-400 mt-0.5">{s.penNameHint}</span>
+                    </span>
+                  </label>
+                  {usePenName && (
+                    <div className="pl-6">
+                      <input
+                        value={penName}
+                        onChange={(e) => setPenName(e.target.value)}
+                        disabled={isProcessing}
+                        maxLength={30}
+                        autoFocus
+                        aria-label={s.penNameLabel}
+                        placeholder={s.penNamePlaceholder}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                      />
+                      <p className="text-xs text-amber-600 mt-1.5">{s.penNameWarning}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -392,7 +409,7 @@ export default function StorySubmit() {
 
             <button
               onClick={submit}
-              disabled={!transcript.trim() || transcript.trim().length < 10 || isProcessing}
+              disabled={!transcript.trim() || transcript.trim().length < 10 || isProcessing || (publishConsent && usePenName && !penName.trim())}
               className="w-full py-3.5 rounded-xl bg-emerald-600 text-white font-medium flex items-center justify-center gap-2 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <Shield size={16} />{s.submit}
