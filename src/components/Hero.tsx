@@ -21,8 +21,8 @@ export default function Hero() {
         </p>
 
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-none mb-6">
-          <span className="block">StoryTech</span>
-          <span className="block text-slate-300">Humanity Lab</span>
+          <span className="block">Humanity</span>
+          <span className="block text-slate-300">Mesh</span>
         </h1>
 
         <div className="w-16 h-px bg-slate-500 mx-auto my-8" />

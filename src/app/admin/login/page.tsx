@@ -38,7 +38,7 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-white font-semibold text-lg">StoryTech Humanity Lab</p>
+          <p className="text-white font-semibold text-lg">Humanity Mesh</p>
           <p className="text-slate-400 text-sm mt-1">Admin Login</p>
         </div>
 

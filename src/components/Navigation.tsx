@@ -80,7 +80,7 @@ export default function Navigation() {
             scrolled ? 'text-slate-900' : 'text-white'
           }`}
         >
-          StoryTech
+          Humanity Mesh
         </Link>
 
         <div className="flex items-center gap-6">

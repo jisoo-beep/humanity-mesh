@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row gap-12 md:gap-32 mb-16">
           {/* Brand */}
           <div className="md:w-1/2 lg:w-1/3">
-            <p className="text-white font-semibold mb-3">StoryTech Humanity Lab</p>
+            <p className="text-white font-semibold mb-3">Humanity Mesh</p>
             <p className="text-sm leading-relaxed text-slate-500">
               {t.footer.about}
             </p>

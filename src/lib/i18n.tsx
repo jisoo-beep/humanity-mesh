@@ -103,7 +103,7 @@ const ko = {
     archive: '아카이브',
     about: '탈북 청소년들의 이야기가 세상과 만나는 공간',
     // contribute: '참여하기',
-    rights: '© 2026 StoryTech Humanity Lab. All rights reserved.',
+    rights: '© 2026 Humanity Mesh. All rights reserved.',
   },
   submit: {
     badge: '익명 스토리 제출',
@@ -159,7 +159,7 @@ const ko = {
   adminDashboard: {
     loading: '불러오는 중...',
     overviewTitle: '대시보드 개요',
-    overviewDesc: 'StoryTech Humanity Lab의 현재 운영 지표입니다.',
+    overviewDesc: 'Humanity Mesh의 현재 운영 지표입니다.',
     lastUpdated: '최종 업데이트:',
     totalIssues: '전체 이슈',
     published: '발행됨',
@@ -402,7 +402,7 @@ const en: typeof ko = {
     archive: 'Archive',
     about: "Where the stories of North Korean defector youth meet the world.",
     // contribute: 'Contribute',
-    rights: '© 2026 StoryTech Humanity Lab. All rights reserved.',
+    rights: '© 2026 Humanity Mesh. All rights reserved.',
   },
   submit: {
     badge: 'Anonymous Story Submission',
@@ -458,7 +458,7 @@ const en: typeof ko = {
   adminDashboard: {
     loading: 'Loading...',
     overviewTitle: 'Dashboard Overview',
-    overviewDesc: 'Current operational metrics for StoryTech Humanity Lab.',
+    overviewDesc: 'Current operational metrics for Humanity Mesh.',
     lastUpdated: 'Last updated:',
     totalIssues: 'Total Issues',
     published: 'Published',
