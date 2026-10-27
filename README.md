@@ -1,420 +1,420 @@
-# Humanity Mesh — 프로젝트 문서
+# Humanity Mesh — Project Documentation
 
-> 탈북 청소년들이 자신의 이야기를 안전하게 공유하고, AI 기반 도구를 통해 글쓰기 능력을 향상시킬 수 있는 플랫폼
+> A platform where North Korean defector youth can safely share their stories and improve their writing skills with AI-powered tools
 
 ---
 
-## 📁 프로젝트 구조
+## 📁 Project Structure
 
 ```
 story-tech/
-├── schema.sql                     # Supabase DDL + 초기 데이터 (storytech 스키마)
-├── .env.example                   # 환경 변수 템플릿 (발급 경로 안내 포함)
+├── schema.sql                     # Supabase DDL + seed data (storytech schema)
+├── .env.example                   # Environment variable template (with issuance instructions)
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx               # 메인 홈페이지
-│   │   ├── layout.tsx             # 루트 레이아웃 (I18nProvider 주입)
-│   │   ├── providers.tsx          # 클라이언트 프로바이더
-│   │   ├── submit/                # /submit 라우트 (익명 스토리 제출 페이지)
-│   │   ├── admin/                 # 어드민 영역 (사이드바 레이아웃)
-│   │   │   ├── layout.tsx         # AdminShell 공통 레이아웃
-│   │   │   ├── page.tsx           # /admin — 대시보드
-│   │   │   ├── login/             # /admin/login — 로그인
-│   │   │   ├── content/           # /admin/content — 콘텐츠 관리
-│   │   │   ├── stories/           # /admin/stories — 스토리 관리
-│   │   │   └── analytics/         # /admin/analytics — 분석 대시보드
-│   │   └── api/                   # Next.js API Routes (서버 전용)
+│   │   ├── page.tsx               # Main homepage
+│   │   ├── layout.tsx             # Root layout (injects I18nProvider)
+│   │   ├── providers.tsx          # Client providers
+│   │   ├── submit/                # /submit route (anonymous story submission page)
+│   │   ├── admin/                 # Admin area (sidebar layout)
+│   │   │   ├── layout.tsx         # Shared AdminShell layout
+│   │   │   ├── page.tsx           # /admin — Dashboard
+│   │   │   ├── login/             # /admin/login — Login
+│   │   │   ├── content/           # /admin/content — Content management
+│   │   │   ├── stories/           # /admin/stories — Story management
+│   │   │   └── analytics/         # /admin/analytics — Analytics dashboard
+│   │   └── api/                   # Next.js API Routes (server-only)
 │   │       ├── admin/
-│   │       │   ├── login/         # POST — 어드민 로그인
-│   │       │   ├── stats/         # GET — 대시보드 통계
-│   │       │   ├── issues/        # GET/POST — 이슈 CRUD
-│   │       │   │   └── [id]/publish/  # POST — 이슈 발행
-│   │       │   ├── articles/      # POST — 아티클 생성
-│   │       │   │   └── [id]/      # PUT/DELETE — 아티클 수정/삭제
-│   │       │   ├── stories/       # GET — 스토리 목록
-│   │       │   │   └── [id]/decrypt/ # POST — 스토리 복호화
-│   │       │   └── analytics/     # GET — 분석 데이터
+│   │       │   ├── login/         # POST — Admin login
+│   │       │   ├── stats/         # GET — Dashboard statistics
+│   │       │   ├── issues/        # GET/POST — Issue CRUD
+│   │       │   │   └── [id]/publish/  # POST — Publish issue
+│   │       │   ├── articles/      # POST — Create article
+│   │       │   │   └── [id]/      # PUT/DELETE — Update/delete article
+│   │       │   ├── stories/       # GET — Story list
+│   │       │   │   └── [id]/decrypt/ # POST — Decrypt story
+│   │       │   └── analytics/     # GET — Analytics data
 │   │       ├── ai/
-│   │       │   ├── analyze/       # POST — 글쓰기 분석 (AI)
-│   │       │   ├── expand/        # POST — 문장 확장 제안 (AI)
-│   │       │   └── translate/     # POST — 텍스트 번역 (AI)
-│   │       ├── issues/            # GET — 공개 이슈 조회
-│   │       ├── articles/          # GET — 아티클 조회 + 조회수 카운팅
-│   │       ├── stories/submit/    # POST — 스토리 제출 (접속 키 필요, 익명화 → 암호화 → IPFS)
-│   │       ├── payment/           # POST 접속 키 발급 / GET 접속 키 검증
-│   │       └── stats/             # GET — 공개 임팩트 통계
+│   │       │   ├── analyze/       # POST — Writing analysis (AI)
+│   │       │   ├── expand/        # POST — Sentence expansion suggestions (AI)
+│   │       │   └── translate/     # POST — Text translation (AI)
+│   │       ├── issues/            # GET — Public issues
+│   │       ├── articles/          # GET — Articles + view counting
+│   │       ├── stories/submit/    # POST — Story submission (access key required; anonymize → encrypt → IPFS)
+│   │       ├── payment/           # POST issue access key / GET verify access key
+│   │       └── stats/             # GET — Public impact statistics
 │   ├── components/
-│   │   ├── Navigation.tsx         # 상단 네비게이션 (언어 토글 포함)
-│   │   ├── Hero.tsx               # 히어로 섹션
-│   │   ├── About.tsx              # 소개 섹션 (미션/비전/배경)
-│   │   ├── Magazine.tsx           # 매거진 섹션 (공개 이슈 목록)
-│   │   ├── AILab.tsx              # AI 글쓰기 연구소 컴포넌트
-│   │   ├── AITranslatedText.tsx   # AI 실시간 번역 텍스트 컴포넌트
-│   │   ├── StorySubmit.tsx        # 익명 스토리 제출 폼
-│   │   ├── Impact.tsx             # 임팩트 수치 섹션
-│   │   ├── Footer.tsx             # 푸터
-│   │   └── AdminShell.tsx         # 어드민 공통 레이아웃 (사이드바)
+│   │   ├── Navigation.tsx         # Top navigation (includes language toggle)
+│   │   ├── Hero.tsx               # Hero section
+│   │   ├── About.tsx              # About section (mission/vision/background)
+│   │   ├── Magazine.tsx           # Magazine section (published issues)
+│   │   ├── AILab.tsx              # AI Writing Lab component
+│   │   ├── AITranslatedText.tsx   # Real-time AI-translated text component
+│   │   ├── StorySubmit.tsx        # Anonymous story submission form
+│   │   ├── Impact.tsx             # Impact metrics section
+│   │   ├── Footer.tsx             # Footer
+│   │   └── AdminShell.tsx         # Shared admin layout (sidebar)
 │   └── lib/
-│       ├── db.ts                  # 공용 도메인 타입 (Issue, Article, Story …)
-│       ├── supabase.ts            # 서버 전용 Supabase 클라이언트 (service_role)
-│       ├── repository.ts          # DB 조회/저장 함수 (snake_case 행 ↔ camelCase 타입)
-│       ├── anonymize.ts           # AI 익명화 (실패 시 예외 — 원문 저장 차단)
-│       ├── i18n.tsx               # 다국어(KO/EN) Context Provider
-│       ├── auth.ts                # 어드민 토큰 인증 유틸리티
-│       ├── pinata.ts              # Pinata IPFS SDK 래퍼
-│       └── story-crypto.ts        # AES-256-GCM 봉투 암호화/복호화
+│       ├── db.ts                  # Shared domain types (Issue, Article, Story …)
+│       ├── supabase.ts            # Server-only Supabase client (service_role)
+│       ├── repository.ts          # DB query/save functions (snake_case rows ↔ camelCase types)
+│       ├── anonymize.ts           # AI anonymization (throws on failure — blocks storing raw text)
+│       ├── i18n.tsx               # Multilingual (KO/EN) Context Provider
+│       ├── auth.ts                # Admin token authentication utilities
+│       ├── pinata.ts              # Pinata IPFS SDK wrapper
+│       └── story-crypto.ts        # AES-256-GCM envelope encryption/decryption
 ```
 
 ---
 
-## 🗄️ 데이터 모델 (Supabase `storytech` 스키마)
+## 🗄️ Data Model (Supabase `storytech` schema)
 
-전체 DDL과 초기 데이터는 `schema.sql` 참고. 모든 테이블은 RLS 활성화 + 정책 없음 → 서버의 service_role 키로만 접근.
+See `schema.sql` for the full DDL and seed data. All tables have RLS enabled with no policies → accessible only via the server's service_role key.
 
-| 테이블 | 주요 컬럼 | 비고 |
-|--------|----------|------|
-| `access_keys` | `key_hash`, `age`, `gender`, `created_at` | 원래 키는 저장하지 않고 SHA-256 해시만 |
-| `stories` | `cid`, `wrapped_key`, `emotions`, `keywords`, `input_type`, `publish_consent`, `pen_name` | 본문은 IPFS에 암호문으로만 존재 |
-| `issues` | `issue_number`, `title`, `theme`, `editor_note`, `is_published`, `published_at` | 매거진 호 |
-| `articles` | `issue_id`, `type`, `title`, `content`, `author_name`, `display_order`, `views`, `highlight_quote` | 조회수는 `increment_article_views()` 함수로 원자적 증가 |
+| Table | Key Columns | Notes |
+|-------|-------------|-------|
+| `access_keys` | `key_hash`, `age`, `gender`, `created_at` | The raw key is never stored — only its SHA-256 hash |
+| `stories` | `cid`, `wrapped_key`, `emotions`, `keywords`, `input_type`, `publish_consent`, `pen_name` | The story body exists only as ciphertext on IPFS |
+| `issues` | `issue_number`, `title`, `theme`, `editor_note`, `is_published`, `published_at` | Magazine issues |
+| `articles` | `issue_id`, `type`, `title`, `content`, `author_name`, `display_order`, `views`, `highlight_quote` | Views incremented atomically via the `increment_article_views()` function |
 
-- 임팩트 통계(총 스토리 수, 감정 분포, 참여 학생 수)는 별도 저장 없이 테이블에서 집계
-- 임팩트 섹션의 "학생들의 목소리"는 발행된 기사의 `highlight_quote`(관리자가 `/admin/content`에서 본문 문장을 골라 지정, 본문에 없는 문장은 DB가 거부)
-
----
-
-## ⚙️ 핵심 기능 로직
-
-### 1. 다국어 지원 (i18n)
-
-**파일**: `src/lib/i18n.tsx`
-
-- `ko` / `en` 두 언어 객체를 정적으로 정의
-- `I18nProvider` 가 React Context로 전체 앱에 주입
-- `useI18n()` 훅으로 어디서든 `{ t, lang, setLang }` 접근
-- `AITranslatedText` 컴포넌트: DB에 저장된 한국어 텍스트를 영어 모드에서 AI API(`/api/ai/translate`)로 실시간 번역하여 렌더링
-
-```
-언어 변경 → setLang('en') → t = en 객체로 교체 → UI 즉시 변경
-DB 텍스트(한국어) → AITranslatedText → /api/ai/translate → 영어로 렌더링
-```
+- Impact statistics (total stories, emotion distribution, participating students) are aggregated from the tables, not stored separately
+- "Student Voices" in the Impact section come from published articles' `highlight_quote` (selected by an admin from the article body in `/admin/content`; the DB rejects sentences not found in the body)
 
 ---
 
-### 2. 스토리 제출 파이프라인
+## ⚙️ Core Feature Logic
 
-**파일**: `src/components/StorySubmit.tsx`
+### 1. Internationalization (i18n)
 
-사용자 입력부터 IPFS 저장까지 서버의 한 요청(`/api/stories/submit`) 안에서 처리. 요청에는 `X-Access-Key` 헤더(발급받은 접속 키)가 필요.
+**File**: `src/lib/i18n.tsx`
+
+- `ko` / `en` language objects defined statically
+- `I18nProvider` injects them across the app via React Context
+- `useI18n()` hook gives access to `{ t, lang, setLang }` anywhere
+- `AITranslatedText` component: in English mode, translates Korean text stored in the DB in real time via the AI API (`/api/ai/translate`) and renders it
 
 ```
-[사용자 입력] (음성 or 텍스트) + 매거진 게재 동의 / 필명 (선택)
+Language change → setLang('en') → t swaps to en object → UI updates instantly
+DB text (Korean) → AITranslatedText → /api/ai/translate → rendered in English
+```
+
+---
+
+### 2. Story Submission Pipeline
+
+**File**: `src/components/StorySubmit.tsx`
+
+Everything from user input to IPFS storage is handled within a single server request (`/api/stories/submit`). The request requires an `X-Access-Key` header (the issued access key).
+
+```
+[User input] (voice or text) + magazine publication consent / pen name (optional)
        ↓
-[1] 접속 키 검증
-[2] AI 익명화 (src/lib/anonymize.ts)
-  - 이름·지명·날짜·소속을 [이름] [장소] [때] [소속]으로 치환, 연락처 삭제
-  - 실패하면 저장하지 않고 중단 (원문이 저장되는 경로 차단)
-[3] 감정 분석 — 4대 감정 비율 + 키워드 5개
-[4] 봉투 암호화 → IPFS 업로드 (암호문만)
-[5] DB 저장 — CID, 잠긴 데이터 키, 감정, 키워드, 게재 동의, 필명
+[1] Verify access key
+[2] AI anonymization (src/lib/anonymize.ts)
+  - Replaces names, places, dates, affiliations with [NAME] [PLACE] [TIME] [AFFILIATION]; removes contact info
+  - On failure, aborts without saving (blocks any path that stores the raw text)
+[3] Emotion analysis — ratios of 4 core emotions + 5 keywords
+[4] Envelope encryption → IPFS upload (ciphertext only)
+[5] DB save — CID, wrapped data key, emotions, keywords, publication consent, pen name
        ↓
-[완료] CID + 게이트웨이 URL 반환
+[Done] Returns CID + gateway URL
 ```
 
-**음성 입력 처리**:
-- Web Speech API (`SpeechRecognition`) 사용
-- 실시간 중간 결과(interim)와 최종 결과(final) 동시 표시
-- TTS(Text-to-Speech) 미리 듣기 기능 내장
-- HTTPS 또는 localhost에서만 동작 (보안 컨텍스트 필수)
+**Voice input handling**:
+- Uses the Web Speech API (`SpeechRecognition`)
+- Shows interim and final results simultaneously in real time
+- Built-in TTS (Text-to-Speech) preview
+- Works only over HTTPS or on localhost (secure context required)
 
 ---
 
-### 3. 암호화/복호화
+### 3. Encryption / Decryption
 
-**파일**: `src/lib/story-crypto.ts`
+**File**: `src/lib/story-crypto.ts`
 
 ```
-봉투 암호화 (AES-256-GCM)
-  - 스토리마다 새 32바이트 데이터 키 생성 → 본문 암호화 → IPFS 업로드 ({ v: 2, iv, tag, data })
-  - 데이터 키는 마스터키(STORY_ENCRYPTION_KEY)로 암호화해 DB stories.wrapped_key 에만 저장
-  - 원문을 보려면 마스터키(환경변수)와 잠긴 데이터 키(DB)가 모두 필요
+Envelope encryption (AES-256-GCM)
+  - Generates a new 32-byte data key per story → encrypts body → uploads to IPFS ({ v: 2, iv, tag, data })
+  - The data key is encrypted with the master key (STORY_ENCRYPTION_KEY) and stored only in DB stories.wrapped_key
+  - Viewing the original requires both the master key (env var) and the wrapped data key (DB)
 
-복호화: (관리자 전용)
-  - /api/admin/stories/[id]/decrypt 에서 wrapped_key 해제 → IPFS 암호문 복호화
-  - DB 행을 지우면 IPFS 암호문은 영구히 복호화 불가 (삭제 요청 대응)
+Decryption: (admin only)
+  - /api/admin/stories/[id]/decrypt unwraps wrapped_key → decrypts the IPFS ciphertext
+  - Deleting the DB row makes the IPFS ciphertext permanently undecryptable (handles deletion requests)
 ```
 
-원문은 절대 DB에 평문으로 저장되지 않습니다. IPFS에도 암호화된 상태로만 저장됩니다.
+The original text is never stored in plaintext in the DB. It is stored on IPFS only in encrypted form.
 
 ---
 
-### 4. IPFS 연동 (Pinata)
+### 4. IPFS Integration (Pinata)
 
-**파일**: `src/lib/pinata.ts`
+**File**: `src/lib/pinata.ts`
 
 ```
-Pinata SDK → IPFS 퍼블릭 네트워크 업로드
-  - pinata.upload.public.file(file) → CID 반환
-  - pinata.gateways.public.convert(cid) → 공개 게이트웨이 URL 반환
-환경변수: PINATA_JWT, PINATA_GATEWAY
+Pinata SDK → upload to the public IPFS network
+  - pinata.upload.public.file(file) → returns CID
+  - pinata.gateways.public.convert(cid) → returns public gateway URL
+Env vars: PINATA_JWT, PINATA_GATEWAY
 ```
 
 ---
 
-### 5. 어드민 인증
+### 5. Admin Authentication
 
-**파일**: `src/lib/auth.ts`, `src/components/AdminShell.tsx`
+**Files**: `src/lib/auth.ts`, `src/components/AdminShell.tsx`
 
-- 비밀번호 기반의 심플한 토큰 인증 (`ADMIN_PASSWORD` 환경변수)
-- 로그인 성공 시 토큰을 `localStorage.admin_token`에 저장
-- `AdminShell`이 마운트마다 토큰 유무를 확인, 없으면 `/admin/login`으로 리다이렉트
-- 모든 Admin API 엔드포인트는 `Authorization: Bearer <token>` 헤더 필수
-
----
-
-### 6. 데이터베이스 (Supabase)
-
-**파일**: `src/lib/supabase.ts`, `src/lib/repository.ts`
-
-- 서버 전용 클라이언트(`server-only`)가 service_role 키로 `storytech` 스키마에 접근
-- 라우트는 `repository.ts` 함수만 호출하고, DB 행(snake_case) ↔ 앱 타입(camelCase) 변환은 repository에서 처리
-- 초기 설정: `schema.sql`을 SQL Editor에서 실행 → Project Settings → Data API → Exposed schemas에 `storytech` 추가
+- Simple password-based token authentication (`ADMIN_PASSWORD` env var)
+- On successful login, the token is stored in `localStorage.admin_token`
+- `AdminShell` checks for the token on every mount and redirects to `/admin/login` if missing
+- All Admin API endpoints require an `Authorization: Bearer <token>` header
 
 ---
 
-## 🎛️ 어드민 페이지 상세
+### 6. Database (Supabase)
 
-### 어드민 공통 레이아웃 (`AdminShell.tsx`)
+**Files**: `src/lib/supabase.ts`, `src/lib/repository.ts`
 
-왼쪽 사이드바 + 오른쪽 메인 콘텐츠 구조.
-
-```
-┌───────────┬─────────────────────────────┐
-│ Humanity  │                             │
-│ 사이드바   │     메인 콘텐츠 영역         │
-│           │                             │
-│ ■ 대시보드 │  (각 페이지 컴포넌트 렌더링) │
-│ ■ 콘텐츠   │                             │
-│ ■ 스토리   │                             │
-│ ■ 분석    │                             │
-│           │                             │
-│ [KO][EN]  │                             │
-│ 홈 | 로그아웃 │                          │
-└───────────┴─────────────────────────────┘
-```
-
-사이드바 하단에 KO/EN 언어 토글 스위치가 존재합니다.
+- A server-only client (`server-only`) accesses the `storytech` schema with the service_role key
+- Routes call only `repository.ts` functions; conversion between DB rows (snake_case) and app types (camelCase) happens in the repository
+- Initial setup: run `schema.sql` in the SQL Editor → add `storytech` under Project Settings → Data API → Exposed schemas
 
 ---
 
-### 📊 대시보드 (`/admin`)
+## 🎛️ Admin Pages
 
-**파일**: `src/app/admin/page.tsx`
+### Shared Admin Layout (`AdminShell.tsx`)
 
-**기능**:
-- `/api/admin/stats` 에서 통계 데이터 로드
-- 4개의 요약 카드: 전체 이슈 / 발행됨 / 전체 아티클 / 총 조회수
-- 주간 방문자 Bar Chart (`recharts` 라이브러리 사용)
-- 인기 아티클 Top 4 목록 (조회수 기준, AI 번역 텍스트 표시)
-- 빠른 작업 링크: 콘텐츠 관리 / 분석 리포트 / 메인 웹사이트
+Left sidebar + right main content area.
 
-**데이터 흐름**:
 ```
-페이지 마운트 → localStorage에서 admin_token 읽기
-→ GET /api/admin/stats (Bearer 토큰)
+┌──────────────┬─────────────────────────────┐
+│ Humanity     │                             │
+│ Sidebar      │     Main content area       │
+│              │                             │
+│ ■ Dashboard  │  (renders each page         │
+│ ■ Content    │   component)                │
+│ ■ Stories    │                             │
+│ ■ Analytics  │                             │
+│              │                             │
+│ [KO][EN]     │                             │
+│ Home | Logout│                             │
+└──────────────┴─────────────────────────────┘
+```
+
+A KO/EN language toggle sits at the bottom of the sidebar.
+
+---
+
+### 📊 Dashboard (`/admin`)
+
+**File**: `src/app/admin/page.tsx`
+
+**Features**:
+- Loads statistics from `/api/admin/stats`
+- 4 summary cards: Total Issues / Published / Total Articles / Total Views
+- Weekly visitors bar chart (using `recharts`)
+- Top 4 popular articles (by views, shown with AI-translated text)
+- Quick links: Content Management / Analytics Report / Main Website
+
+**Data flow**:
+```
+Page mount → read admin_token from localStorage
+→ GET /api/admin/stats (Bearer token)
 → { totalIssues, publishedIssues, totalArticles, totalViews, userActivity, popularArticles }
-→ UI 렌더링
+→ Render UI
 ```
 
 ---
 
-### 📝 콘텐츠 관리 (`/admin/content`)
+### 📝 Content Management (`/admin/content`)
 
-**파일**: `src/app/admin/content/page.tsx`
+**File**: `src/app/admin/content/page.tsx`
 
-매거진의 이슈와 아티클을 완전히 CRUD하는 핵심 관리 페이지.
+The core admin page providing full CRUD over magazine issues and articles.
 
-#### 주요 기능
+#### Key Features
 
-| 기능 | 설명 |
-|------|------|
-| 이슈 생성 | 호수, 제목, 주제, 편집자 노트 입력 → `POST /api/admin/issues` |
-| 이슈 발행 | Draft → Published 상태 변경 → `POST /api/admin/issues/[id]/publish` |
-| 아티클 추가 | 이슈에 아티클 추가 → `POST /api/admin/articles` |
-| 아티클 수정 | 제목/내용/저자/순서 수정 → `PUT /api/admin/articles/[id]` |
-| 아티클 삭제 | 삭제 확인 후 제거 → `DELETE /api/admin/articles/[id]` |
+| Feature | Description |
+|---------|-------------|
+| Create issue | Enter issue number, title, theme, editor's note → `POST /api/admin/issues` |
+| Publish issue | Change Draft → Published → `POST /api/admin/issues/[id]/publish` |
+| Add article | Add an article to an issue → `POST /api/admin/articles` |
+| Edit article | Edit title/content/author/order → `PUT /api/admin/articles/[id]` |
+| Delete article | Remove after confirmation → `DELETE /api/admin/articles/[id]` |
 
-#### UI 구조
+#### UI Structure
 
 ```
-[+ 새 이슈] 버튼
-       ↓ 클릭 시
-[새 이슈 생성 폼] (토글)
-  - 호수, 제목, 주제, 편집자 노트
+[+ New Issue] button
+       ↓ on click
+[New issue form] (toggle)
+  - Issue number, title, theme, editor's note
 
-[성공 알림 플래시 메시지] (3초 후 자동 사라짐)
+[Success flash message] (auto-dismisses after 3 seconds)
 
-[아티클 추가/수정 폼] (이슈별로 열림)
-  - 타입(인터뷰/스토리/서평), 순서, 제목, 저자, 내용
+[Add/Edit article form] (opens per issue)
+  - Type (Interview/Story/Review), order, title, author, content
 
-[이슈 목록] (페이지당 5개, 페이지네이션)
-  └─ 각 이슈 카드
-       ├─ Vol. N | [Draft/Published 뱃지]
-       ├─ 제목, 주제 (AI 번역 표시)
-       ├─ [발행] 버튼 (미발행 이슈만)
-       ├─ [아티클+] 버튼
-       └─ [▼/▲] 펼치기 버튼
-            └─ 아티클 목록 (순서, 타입, 제목, 저자, ✏️, 🗑️)
+[Issue list] (5 per page, paginated)
+  └─ Each issue card
+       ├─ Vol. N | [Draft/Published badge]
+       ├─ Title, theme (AI-translated)
+       ├─ [Publish] button (unpublished issues only)
+       ├─ [Article+] button
+       └─ [▼/▲] expand button
+            └─ Article list (order, type, title, author, ✏️, 🗑️)
 ```
 
-#### 아티클 타입
-- `interview` → 인터뷰
-- `story` → 스토리
-- `review` → 서평
+#### Article Types
+- `interview` → Interview
+- `story` → Story
+- `review` → Book Review
 
 ---
 
-### 🛡️ 스토리 관리 (`/admin/stories`)
+### 🛡️ Story Management (`/admin/stories`)
 
-**파일**: `src/app/admin/stories/page.tsx`
+**File**: `src/app/admin/stories/page.tsx`
 
-사용자가 제출한 암호화된 스토리를 관리하는 보안 아카이브.
+A secure archive for managing encrypted stories submitted by users.
 
-#### 주요 기능
+#### Key Features
 
-| 기능 | 설명 |
-|------|------|
-| 스토리 목록 | `GET /api/admin/stories` — 모든 제출된 스토리 |
-| 원문 복호화 | `POST /api/admin/stories/[id]/decrypt` — 선택한 스토리 복호화 |
-| IPFS 원본 확인 | 암호화 상태의 원본을 IPFS 게이트웨이에서 직접 확인 |
+| Feature | Description |
+|---------|-------------|
+| Story list | `GET /api/admin/stories` — all submitted stories |
+| Decrypt original | `POST /api/admin/stories/[id]/decrypt` — decrypts the selected story |
+| View IPFS original | View the encrypted original directly on the IPFS gateway |
 
-#### 스토리 카드 정보
+#### Story Card
 
 ```
 ┌─────────────────────────────────────────┐
-│  [날짜]              [voice / text 뱃지] │
+│  [Date]              [voice / text badge]│
 │                                         │
-│  익명화된 미리보기 텍스트 (3줄)           │
+│  Anonymized preview text (3 lines)      │
 │                                         │
-│  감정 분석 바 차트:                       │
-│  ■ Sadness    ████████░░  72%           │
-│  ■ Anger      ███░░░░░░░  30%           │
-│  ■ Responsibility █████░  50%           │
-│  ■ Hope       ████████░░  85%           │
+│  Emotion analysis bar chart:            │
+│  ■ Sadness        ████████░░  72%       │
+│  ■ Anger          ███░░░░░░░  30%       │
+│  ■ Responsibility █████░      50%       │
+│  ■ Hope           ████████░░  85%       │
 │                                         │
-│  [🔓 원문 복호화하여 보기]               │
-│  [🔗 IPFS 원본(암호화) 확인]            │
+│  [🔓 Decrypt and view original]         │
+│  [🔗 View IPFS original (encrypted)]    │
 └─────────────────────────────────────────┘
 ```
 
-#### 복호화 모달
+#### Decryption Modal
 
-복호화 버튼 클릭 시 모달 오버레이 표시:
-- 원문 전체 텍스트 표시
-- 보안 경고: "창을 닫으면 원문은 메모리에서 삭제됩니다"
-- 닫기 버튼으로 원문 메모리에서 즉시 제거
-
----
-
-### 📈 분석 대시보드 (`/admin/analytics`)
-
-**파일**: `src/app/admin/analytics/page.tsx`
-
-**제공 데이터**:
-- 총 조회수 / 전체 아티클 수
-- 최근 7일 조회수 추이 차트 (Line Chart)
-- 최근 7일 방문자 활동 차트 (Bar Chart)
-- 전체 스토리 감정 분포 (Pie/Bar Chart)
-- 인기 아티클 상세 목록 (조회수 순)
+Clicking the decrypt button opens a modal overlay:
+- Displays the full original text
+- Security warning: "The original text will be cleared from memory when you close this window"
+- Close button immediately removes the original from memory
 
 ---
 
-## 🌐 사용자 대면 페이지
+### 📈 Analytics Dashboard (`/admin/analytics`)
 
-### 홈페이지 (`/`)
+**File**: `src/app/admin/analytics/page.tsx`
 
-섹션 구성 (위 → 아래):
-1. **Navigation** — 메뉴 + 언어 토글
-2. **Hero** — 타이틀 배너
-3. **Writing Lab CTA** — AI 글쓰기 연구소 진입점 (버튼)
-4. **Magazine** — 최신 이슈 + 과거 이슈 목록
-5. **Impact** — 참여 통계 (총 스토리 수, 학생 수, 감정 분포)
-6. **About** — 미션 / 비전 / 배경 소개
-7. **Footer** — 브랜드 소개 및 연락처 정보
-
-### 스토리 제출 (`/submit`)
-
-Writing Lab 진입부터 스토리 제출까지:
-1. **접근 키 검증 및 관리**:
-   - 진입 시 `localStorage.access_key` 확인 (없으면 결제 모달 표시)
-   - 보안 강화를 위해 화면 상에 키가 기본적으로 Маsking 처리(`ST-••••••`) 되며, 클릭을 통해 전체 복사/열람 가능
-2. **AI 글쓰기 코치 (`AILab`)** — 글쓰기 품질 점수, 문법/어휘/흐름/유창성 분석, 개선 제안 및 AI 교정문 제공
-3. **익명 스토리 제출 (`StorySubmit`)** — 음성/텍스트 입력 기반. 상태 충돌 방지를 위해 각 입력 탭(음성/텍스트)은 격리되어 동작하며, 최종 제출 시 서버에서 익명화 후 IPFS에 저장됨. 매거진 게재 동의와 필명(선택)을 함께 제출
-   - 개별 스토리는 공개되지 않으며, 게재에 동의한 스토리만 관리자가 `/admin/stories`에서 "기사로 옮기기"로 매거진 기사화
-
-#### AILab (`/api/ai/expand`) 제공 항목
-
-| 항목 | 설명 |
-|------|------|
-| 종합 점수 | 0~100점 원형 게이지 표시 |
-| 문법 (Grammar) | 최대 30점 |
-| 어휘 (Vocabulary) | 최대 25점 |
-| 문장 흐름 (Coherence) | 최대 25점 |
-| 유창성 (Fluency) | 최대 20점 |
-| 개선 제안 목록 | 문제 구절 + 이유 설명 |
-| AI 교정문 | 전체 문장 수정안 + 복사 버튼 |
-
-> **참고**: AILab은 감정 분석을 하지 않습니다.
-
-#### 감정 분석이 수행되는 위치
-
-| 위치 | 수행 주체 | 목적 |
-|------|----------|------|
-| `StorySubmit` → `/api/stories/submit` | AI (제출 파이프라인) | 스토리 제출 시 감정 태깅 → DB에 `emotions` 필드로 저장 |
-| `/admin/stories` | 어드민 UI | 저장된 감정 데이터를 카드별 바 차트로 시각화 |
-| `/admin/analytics` | 어드민 UI | 전체 스토리의 감정 분포 집계 차트 |
+**Data provided**:
+- Total views / total articles
+- 7-day view trend chart (Line Chart)
+- 7-day visitor activity chart (Bar Chart)
+- Emotion distribution across all stories (Pie/Bar Chart)
+- Detailed popular article list (sorted by views)
 
 ---
 
-## 🔐 환경변수 (`.env.local`)
+## 🌐 User-Facing Pages
 
-| 변수명 | 설명 |
-|--------|------|
-| `OPENAI_API_KEY` / `OPENAI_MODEL` | OpenAI API 키 / 모델 이름 |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | 어드민 로그인 계정 |
-| `AUTH_SECRET` | 어드민 토큰 서명용 비밀값 |
-| `STORY_ENCRYPTION_KEY` | 스토리 데이터 키를 잠그는 AES-256 마스터키 (32바이트 hex, 64자) |
-| `PINATA_JWT` / `PINATA_GATEWAY` | Pinata API JWT / 게이트웨이 도메인 |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Supabase 프로젝트 URL / 서버 전용 secret 키 |
+### Homepage (`/`)
 
-발급 방법은 `.env.example`의 주석 참고. 배포(Amplify)에서는 같은 이름으로 환경 변수를 등록하면 `amplify.yml`이 빌드 시 주입.
+Sections (top → bottom):
+1. **Navigation** — menu + language toggle
+2. **Hero** — title banner
+3. **Writing Lab CTA** — entry point to the AI Writing Lab (button)
+4. **Magazine** — latest issue + past issues
+5. **Impact** — participation stats (total stories, students, emotion distribution)
+6. **About** — mission / vision / background
+7. **Footer** — brand info and contact details
+
+### Story Submission (`/submit`)
+
+From entering the Writing Lab to submitting a story:
+1. **Access key verification and management**:
+   - On entry, checks `localStorage.access_key` (shows a payment modal if absent)
+   - For security, the key is masked on screen by default (`ST-••••••`) and can be revealed/copied by clicking
+2. **AI Writing Coach (`AILab`)** — writing quality score, grammar/vocabulary/coherence/fluency analysis, improvement suggestions, and an AI-corrected version
+3. **Anonymous Story Submission (`StorySubmit`)** — voice/text input. Each input tab (voice/text) operates in isolation to prevent state conflicts; on final submission the server anonymizes the text and stores it on IPFS. Magazine publication consent and a pen name (optional) are submitted together
+   - Individual stories are never made public; only stories with publication consent are turned into magazine articles by an admin via "Move to article" in `/admin/stories`
+
+#### AILab (`/api/ai/expand`) Output
+
+| Item | Description |
+|------|-------------|
+| Overall score | 0–100, shown as a circular gauge |
+| Grammar | Up to 30 points |
+| Vocabulary | Up to 25 points |
+| Coherence | Up to 25 points |
+| Fluency | Up to 20 points |
+| Suggestions | Problem phrases + explanations |
+| AI-corrected text | Full revised text + copy button |
+
+> **Note**: AILab does not perform emotion analysis.
+
+#### Where Emotion Analysis Happens
+
+| Location | Performed by | Purpose |
+|----------|--------------|---------|
+| `StorySubmit` → `/api/stories/submit` | AI (submission pipeline) | Tags emotions on submission → stored in the DB `emotions` field |
+| `/admin/stories` | Admin UI | Visualizes stored emotion data as a bar chart per card |
+| `/admin/analytics` | Admin UI | Aggregated emotion distribution chart across all stories |
 
 ---
 
-## 🛠️ 기술 스택
+## 🔐 Environment Variables (`.env.local`)
 
-| 분류 | 기술 |
-|------|------|
-| 프레임워크 | Next.js 15 (App Router) |
-| 언어 | TypeScript |
-| 스타일 | Tailwind CSS |
+| Variable | Description |
+|----------|-------------|
+| `OPENAI_API_KEY` / `OPENAI_MODEL` | OpenAI API key / model name |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Admin login credentials |
+| `AUTH_SECRET` | Secret for signing admin tokens |
+| `STORY_ENCRYPTION_KEY` | AES-256 master key that wraps story data keys (32-byte hex, 64 chars) |
+| `PINATA_JWT` / `PINATA_GATEWAY` | Pinata API JWT / gateway domain |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Supabase project URL / server-only secret key |
+
+See the comments in `.env.example` for how to obtain each. For deployment (Amplify), register environment variables with the same names and `amplify.yml` injects them at build time.
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
 | AI | OpenAI API (gpt-4o-mini) |
-| 저장소 | Supabase (PostgreSQL, `storytech` 스키마) |
-| 분산 저장 | IPFS (Pinata SDK) |
-| 암호화 | Node.js `crypto` — AES-256-GCM |
-| 차트 | Recharts |
-| 아이콘 | Lucide React |
-| 음성 | Web Speech API (SpeechRecognition + SpeechSynthesis) |
+| Storage | Supabase (PostgreSQL, `storytech` schema) |
+| Distributed storage | IPFS (Pinata SDK) |
+| Encryption | Node.js `crypto` — AES-256-GCM |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Voice | Web Speech API (SpeechRecognition + SpeechSynthesis) |
 
 ---
 
-## 🚀 개발 서버 실행
+## 🚀 Running the Dev Server
 
 ```bash
 npm run dev
 # → http://localhost:3000
 ```
 
-어드민 진입: `http://localhost:3000/admin`
-- 토큰 없으면 `/admin/login` 자동 리다이렉트
-- `ADMIN_PASSWORD` 환경변수의 값으로 로그인
+Admin entry: `http://localhost:3000/admin`
+- Redirects to `/admin/login` automatically if no token
+- Log in with the value of the `ADMIN_PASSWORD` environment variable
